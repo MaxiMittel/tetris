@@ -10,9 +10,8 @@ export const signup = (username: string, password: string) => {
 };
 
 export const signin = (username: string, password: string) => {
-    return axios.post(`${BASE_URL}/signin`, {
-      username,
-      password,
-    });
-  };
-  
+  return axios.post(`${BASE_URL}/signin`, {
+    username,
+    password,
+  });
+};
