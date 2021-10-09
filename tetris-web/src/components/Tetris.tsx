@@ -77,6 +77,8 @@ export const Tetris: React.FC<Props> = (props: Props) => {
         setFixed(false);
       }, 1000);
     }
+
+    return () => clearTimeout(fixPositionTimer.current);
   }, [
     playerPosition,
     playerShape,

@@ -8,12 +8,36 @@ import { Blocks, Rotation, Shape } from "../types";
  * @returns Array of coordinates of the shape.
  */
 export const TShape = (x: number, y: number, rotation: Rotation) => {
-  return [
-    { x: x, y: y },
-    { x: x + 1, y: y },
-    { x: x + 2, y: y },
-    { x: x + 1, y: y + 1 },
-  ];
+  switch (rotation) {
+    case Rotation.UP:
+      return [
+        { x: x, y: y },
+        { x: x + 1, y: y },
+        { x: x + 2, y: y },
+        { x: x + 1, y: y + 1 },
+      ];
+    case Rotation.RIGHT:
+      return [
+        { x: x, y: y },
+        { x: x, y: y + 1 },
+        { x: x, y: y + 2 },
+        { x: x + 1, y: y + 1 },
+      ];
+    case Rotation.DOWN:
+      return [
+        { x: x, y: y + 1 },
+        { x: x + 1, y: y + 1 },
+        { x: x + 2, y: y + 1 },
+        { x: x + 1, y: y },
+      ];
+    case Rotation.LEFT:
+      return [
+        { x: x + 1, y: y },
+        { x: x + 1, y: y + 1 },
+        { x: x + 1, y: y + 2 },
+        { x: x, y: y + 1 },
+      ];
+  }
 };
 
 /**
@@ -28,30 +52,30 @@ export const LShape = (x: number, y: number, rotation: Rotation) => {
     case Rotation.UP:
       return [
         { x: x, y: y },
-        { x: x + 1, y: y },
-        { x: x + 2, y: y },
+        { x: x, y: y + 1 },
+        { x: x + 1, y: y + 1 },
         { x: x + 2, y: y + 1 },
       ];
     case Rotation.RIGHT:
       return [
         { x: x, y: y },
+        { x: x + 1, y: y },
         { x: x, y: y + 1 },
         { x: x, y: y + 2 },
-        { x: x + 1, y: y + 2 },
       ];
     case Rotation.DOWN:
       return [
         { x: x, y: y },
         { x: x + 1, y: y },
         { x: x + 2, y: y },
-        { x: x + 1, y: y + 1 },
+        { x: x + 2, y: y + 1 },
       ];
     case Rotation.LEFT:
       return [
-        { x: x, y: y },
-        { x: x, y: y + 1 },
+        { x: x + 1, y: y },
+        { x: x + 1, y: y + 1 },
+        { x: x + 1, y: y + 2 },
         { x: x, y: y + 2 },
-        { x: x - 1, y: y + 2 },
       ];
   }
 };
@@ -104,12 +128,24 @@ export const ZShape = (x: number, y: number, rotation: Rotation) => {
  * @returns Array of coordinates of the shape.
  */
 export const BarShape = (x: number, y: number, rotation: Rotation) => {
-  return [
-    { x: x, y: y },
-    { x: x + 1, y: y },
-    { x: x + 2, y: y },
-    { x: x + 3, y: y },
-  ];
+  switch (rotation) {
+    case Rotation.UP:
+    case Rotation.DOWN:
+      return [
+        { x: x, y: y },
+        { x: x + 1, y: y },
+        { x: x + 2, y: y },
+        { x: x + 3, y: y },
+      ];
+    case Rotation.RIGHT:
+    case Rotation.LEFT:
+      return [
+        { x: x, y: y },
+        { x: x, y: y + 1 },
+        { x: x, y: y + 2 },
+        { x: x, y: y + 3 },
+      ];
+  }
 };
 
 /**
@@ -165,7 +201,7 @@ export const shapeToCoordinates = (
  * @param y         y-coordinate of the top-left corner of the shape.
  * @param color     Color of the shape.
  * @param shape     The shape to draw.
- * @param rotation  Rotation of the shape. 
+ * @param rotation  Rotation of the shape.
  * @returns         A copy of the field with the shape drawn on it.
  */
 export const drawShape = (
@@ -186,7 +222,7 @@ export const drawShape = (
   let fieldCopy = field.map(function (arr) {
     return arr.slice();
   });
-
+  
   shapeToDraw.forEach(({ x, y }) => {
     fieldCopy[y][x] = color;
   });

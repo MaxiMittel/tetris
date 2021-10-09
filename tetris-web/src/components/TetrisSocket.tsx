@@ -6,7 +6,7 @@ interface Props {}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [playerRotation, setPlayerRotation] = useState<Rotation>(Rotation.UP);
-  const [playerShape, setPlayerShape] = useState(Shape.L);
+  const [playerShape, setPlayerShape] = useState(Shape.T);
   const [playerColor, setPlayerColor] = useState(Blocks.RED);
 
   let fielda = new Array<Blocks[]>(20);

@@ -9,6 +9,7 @@ import { SignUp } from "./components/SignUp";
 import { Account } from "./components/Account";
 import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
+import { TetrisSocket } from "./components/TetrisSocket";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -36,6 +37,7 @@ function App() {
             <Route path="/signup">
               <SignUp onAuthenticated={() => setAuth(true)}/>
             </Route>
+            <Route path="/tetris" component={TetrisSocket} />
             <Authenticated authenticated={isAuth} onAuthenticated={() => setAuth(true)}>
               <Route path="/account" component={Account} />
               <Route path="/" component={Lobbies} exact/>
