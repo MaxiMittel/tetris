@@ -7,6 +7,7 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { Lobbies } from "./components/Lobbies";
 import { SignUp } from "./components/SignUp";
 import { Account } from "./components/Account";
+import { Authenticated } from "./components/Authenticated";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -22,8 +23,10 @@ function App() {
           <Switch>
             <Route path="/signin" component={SignIn} />
             <Route path="/signup" component={SignUp} />
-            <Route path="/account" component={Account} />
-            <Route path="/" component={Lobbies} />
+            <Authenticated>
+              <Route path="/account" component={Account} />
+              <Route path="/" component={Lobbies} />
+            </Authenticated>
           </Switch>
         </BrowserRouter>
       </Navbar>
