@@ -1,18 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SignIn } from "./SignIn";
 
 interface Props {
-    children: React.ReactNode;
+  children: React.ReactNode;
+  authenticated: boolean;
+  onAuthenticated: () => void;
 }
 
 export const Authenticated: React.FC<Props> = (props: Props) => {
-
-    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-  
   return (
     <div>
-      {isLoggedIn && (props.children)}
-      {!isLoggedIn && (<SignIn></SignIn>)}
+      {props.authenticated && props.children}
+      {!props.authenticated && <SignIn onAuthenticated={props.onAuthenticated} />}
     </div>
   );
 };

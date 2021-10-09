@@ -17,7 +17,7 @@ export const Navbar: React.FC<Props> = ({children}) => {
           </a>
           <ul className="navbar-nav d-none d-md-flex">
             <li className="nav-item active">
-              <a href="/play" className="nav-link">
+              <a href="/" className="nav-link">
                 Play
               </a>
             </li>

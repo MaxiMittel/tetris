@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
 import { signup } from "../api/account";
 
-interface Props {}
+interface Props {
+  onAuthenticated: () => void;
+}
 
 export const SignUp: React.FC<Props> = (props: Props) => {
   const [username, setUsername] = React.useState("");
@@ -34,10 +36,12 @@ export const SignUp: React.FC<Props> = (props: Props) => {
       password.length >= 8 &&
       username.length > 0
     ) {
-      //TODO: Hash password client side?
       //TODO: Check if username is available
       signup(username, password)
-        .then(() => console.log("Success!"))
+        .then((response) => {
+          localStorage.setItem("token", response.data.token);
+          props.onAuthenticated();
+        })
         .catch((err) => {
           setUsernameAvailable(false);
           console.log(err);

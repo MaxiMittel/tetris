@@ -1,7 +1,9 @@
 import React from "react";
 import { signup } from "../api/account";
 
-interface Props {}
+interface Props {
+  onAuthenticated: () => void;
+}
 
 export const SignIn: React.FC<Props> = (props: Props) => {
   const [username, setUsername] = React.useState("");
@@ -13,11 +15,11 @@ export const SignIn: React.FC<Props> = (props: Props) => {
   const onSubmit = async (e: any) => {
     e.preventDefault();
 
-    //TODO: Hash password client side?
     signup(username, password)
-      .then(() => {
+      .then(response => {
         setLoginSuccessfull(true);
-        console.log("Success!");
+        localStorage.setItem("token", response.data.token);
+        props.onAuthenticated();
       })
       .catch((err) => {
         setLoginSuccessfull(false);
