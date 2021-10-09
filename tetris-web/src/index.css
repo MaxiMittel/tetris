@@ -39,7 +39,7 @@ code {
   margin: 0;
 }
 
-.card-top{
+.card-top {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -47,6 +47,24 @@ code {
   margin-bottom: 2em;
 }
 
-.card-top h2{
+.card-top h2 {
   margin: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #121212;
+}
+::-webkit-scrollbar-track {
+  background: #00000000;
+  border-radius: 0px;
+  box-shadow: inset 0px 0px 0px 0px #f0f0f0;
 }
