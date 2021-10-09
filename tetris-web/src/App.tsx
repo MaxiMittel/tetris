@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Navbar } from "./components/Navbar";
 import "./index.css";
 import "halfmoon/css/halfmoon-variables.min.css";
-import { Lobbies } from "./components/Lobbies";
+import { SignIn } from "./components/SignIn";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="App">
       <Navbar>
-        <Lobbies></Lobbies>
+        <SignIn></SignIn>
       </Navbar>
     </div>
   );
