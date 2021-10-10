@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { Blocks } from "../types";
+import { Colors } from "../types";
 
 interface Props {
     width: number;
     height: number;
-    field: Blocks[][];
+    field: Colors[][];
     blockSize: number;
 }
 
@@ -13,7 +13,7 @@ export const Canvas: React.FC<Props> = (props: Props) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     /**
-     * Render field of Blocks to the canvas
+     * Render field of Colors to the canvas
      * @param ctx Canvas context
      */
     const draw = useCallback((ctx: any) => {
@@ -23,23 +23,23 @@ export const Canvas: React.FC<Props> = (props: Props) => {
         for (let x = 0; x < props.field[0].length; x++) {
             for (let y = 0; y < props.field.length; y++) {
 
-                if(props.field[y][x] === Blocks.EMPTY) continue;
+                if(props.field[y][x] === Colors.EMPTY) continue;
 
                 const LINE_WIDTH = 3;
                 ctx.strokeStyle = "#ffffff";
                 ctx.lineWidth = LINE_WIDTH;
 
                 switch (props.field[y][x]) {
-                    case Blocks.BLUE:
+                    case Colors.BLUE:
                         ctx.fillStyle= "#00CAE0";
                         break;
-                    case Blocks.GREEN:
+                    case Colors.GREEN:
                         ctx.fillStyle= "#28E247";
                         break;
-                    case Blocks.RED:
+                    case Colors.RED:
                         ctx.fillStyle= "#FF500A";
                         break;
-                    case Blocks.YELLOW:
+                    case Colors.YELLOW:
                         ctx.fillStyle= "#FECB34";
                         break;
                 }

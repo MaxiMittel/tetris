@@ -1,4 +1,4 @@
-import { Blocks, Rotation, Shape } from "../types";
+import { Block, Colors, Rotation, Shape } from "../types";
 
 /**
  * Draws a T-shape.
@@ -195,7 +195,7 @@ export const shapeToCoordinates = (
 };
 
 /**
- * Draws a shape onto a field of Blocks.
+ * Draws a shape onto a field of Colors.
  * @param field     The field to draw the shape on.
  * @param x         x-coordinate of the top-left corner of the shape.
  * @param y         y-coordinate of the top-left corner of the shape.
@@ -204,27 +204,20 @@ export const shapeToCoordinates = (
  * @param rotation  Rotation of the shape.
  * @returns         A copy of the field with the shape drawn on it.
  */
-export const drawShape = (
-  field: Blocks[][],
-  x: number,
-  y: number,
-  color: Blocks,
-  shape: Shape,
-  rotation: Rotation
-) => {
+export const drawShape = (player: Block, field: Colors[][]) => {
   let shapeToDraw: { x: number; y: number }[] = shapeToCoordinates(
-    x,
-    y,
-    shape,
-    rotation
+    player.x,
+    player.y,
+    player.shape,
+    player.rotation
   );
 
   let fieldCopy = field.map(function (arr) {
     return arr.slice();
   });
-  
+
   shapeToDraw.forEach(({ x, y }) => {
-    fieldCopy[y][x] = color;
+    fieldCopy[y][x] = player.color;
   });
 
   return fieldCopy;

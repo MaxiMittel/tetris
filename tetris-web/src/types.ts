@@ -5,7 +5,7 @@ export type Lobby = {
     code: string
 }
 
-export enum Blocks {
+export enum Colors {
     EMPTY,
     BLUE,
     RED,
@@ -26,4 +26,12 @@ export enum Rotation {
     RIGHT,
     DOWN,
     LEFT
+}
+
+export type Block = {
+    color: Colors,
+    shape: Shape,
+    rotation: Rotation,
+    x: number,
+    y: number
 }

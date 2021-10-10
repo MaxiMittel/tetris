@@ -1,44 +1,31 @@
 import React, { useState } from "react";
-import { Blocks, Rotation, Shape } from "../types";
+import { Block, Colors, Rotation, Shape } from "../types";
 import { Tetris } from "./Tetris";
 
 interface Props {}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
-  const [playerRotation, setPlayerRotation] = useState<Rotation>(Rotation.UP);
-  const [playerShape, setPlayerShape] = useState(Shape.T);
-  const [playerColor, setPlayerColor] = useState(Blocks.RED);
 
-  let fielda = new Array<Blocks[]>(20);
+  let fielda = new Array<Colors[]>(20);
 
   for (var i = 0; i < fielda.length; i++) {
-    fielda[i] = new Array<Blocks>(10).fill(Blocks.EMPTY);
+    fielda[i] = new Array<Colors>(10).fill(Colors.EMPTY);
   }
 
-  fielda[10][5] = Blocks.RED;
-
+  const [player, setPlayer] = useState<Block>({ color: Colors.RED, shape: Shape.T, rotation: Rotation.UP, x: 0, y: 0 });
   const [field, setField] = useState(fielda);
-  const [playerPosition, setPlayerPosition] = useState<{
-    x: number;
-    y: number;
-  }>({ x: 0, y: 0 });
 
-  const onBlockFix = (newField: Blocks[][]) => {
+  
+  const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
-    setPlayerColor(Math.floor(Math.random() * 5) + 1);
-    setPlayerShape(Math.floor(Math.random() * 5));
-    setPlayerPosition({ x: 0, y: 0 });
+    setPlayer({ color: Math.floor(Math.random() * 5) + 1, shape: Math.floor(Math.random() * 5) + 1, rotation: Math.floor(Math.random() * 4), x: 0, y: 0 });
   };
 
   return (
     <Tetris
       field={field}
-      playerPosition={playerPosition}
-      playerShape={playerShape}
-      playerColor={playerColor}
-      playerRotation={playerRotation}
-      onPositionChange={(x: number, y: number) => setPlayerPosition({ x, y })}
-      onRotationChange={(rotation: Rotation) => setPlayerRotation(rotation)}
+      player={player}
+      onPlayerMove={(newPlayer: Block) => setPlayer(newPlayer)}
       onBlockFix={onBlockFix}
     ></Tetris>
   );

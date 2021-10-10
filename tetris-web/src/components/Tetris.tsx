@@ -1,18 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { evalCollision } from "../tetris/collision";
 import { drawShape } from "../tetris/shapes";
-import { Blocks, Rotation, Shape } from "../types";
+import { Block, Colors, Rotation, Shape } from "../types";
 import { Canvas } from "./Canvas";
 
 interface Props {
-  field: Blocks[][];
-  playerPosition: { x: number; y: number };
-  playerShape: Shape;
-  playerColor: Blocks;
-  playerRotation: Rotation;
-  onBlockFix: (field: Blocks[][]) => void;
-  onPositionChange: (x: number, y: number) => void;
-  onRotationChange: (rotation: Rotation) => void;
+  field: Colors[][];
+  player: Block;
+  onPlayerMove: (player: Block) => void;
+  onBlockFix: (field: Colors[][]) => void;
 }
 
 export const Tetris: React.FC<Props> = (props: Props) => {
@@ -21,72 +17,32 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   const fixPositionTimer = useRef<any>();
   const [fixed, setFixed] = useState(false);
 
-  const {
-    field,
-    playerPosition,
-    playerShape,
-    playerColor,
-    playerRotation,
-    onBlockFix,
-    onPositionChange,
-    onRotationChange,
-  } = props;
+  const { field, player, onBlockFix, onPlayerMove } = props;
 
   /**
    * Draw the player shape on the gamefield
    */
   useEffect(() => {
-    setGameFieldDisplay(
-      drawShape(
-        field,
-        playerPosition.x,
-        playerPosition.y,
-        playerColor,
-        playerShape,
-        playerRotation
-      )
-    );
-  }, [playerPosition, field, playerColor, playerShape, playerRotation]);
+    setGameFieldDisplay(drawShape(player, field));
+  }, [player, field]);
 
   /**
-   * Check if the player collided with other blocks or the bottom of the gamefield
+   * Check if the player collided with other Colors or the bottom of the gamefield
    */
   useEffect(() => {
-    const collisionBelow = evalCollision(
-      playerPosition.x,
-      playerPosition.y + 1,
-      playerShape,
-      field,
-      playerRotation
-    );
+    const collisionBelow = evalCollision(player, field, 0, 1);
 
     if (collisionBelow.collision) {
       setFixed(true);
       clearTimeout(fixPositionTimer.current);
       fixPositionTimer.current = setTimeout(() => {
-        onBlockFix(
-          drawShape(
-            field,
-            playerPosition.x,
-            playerPosition.y,
-            playerColor,
-            playerShape,
-            playerRotation
-          )
-        );
+        onBlockFix(drawShape(player, field));
         setFixed(false);
       }, 1000);
     }
 
     return () => clearTimeout(fixPositionTimer.current);
-  }, [
-    playerPosition,
-    playerShape,
-    field,
-    playerRotation,
-    playerColor,
-    onBlockFix,
-  ]);
+  }, [player, field, onBlockFix]);
 
   /**
    * KeyDown event handler
@@ -98,62 +54,32 @@ export const Tetris: React.FC<Props> = (props: Props) => {
         case "ArrowDown":
           event.preventDefault();
 
-          const collision = evalCollision(
-            playerPosition.x,
-            playerPosition.y + 1,
-            playerShape,
-            field,
-            playerRotation
-          );
+          const collision = evalCollision(player, field, 0, 1);
 
           if (!collision.combined && !fixed) {
-            onPositionChange(playerPosition.x, playerPosition.y + 1);
+            onPlayerMove({ ...player, y: player.y + 1 });
           }
 
           break;
         case "ArrowLeft":
           event.preventDefault();
-          if (
-            !evalCollision(
-              playerPosition.x - 1,
-              playerPosition.y,
-              playerShape,
-              field,
-              playerRotation
-            ).combined
-          ) {
-            onPositionChange(playerPosition.x - 1, playerPosition.y);
+          if (!evalCollision(player, field, -1, 0).combined) {
+            onPlayerMove({ ...player, x: player.x - 1 });
           }
           break;
         case "ArrowRight":
           event.preventDefault();
-          if (
-            !evalCollision(
-              playerPosition.x + 1,
-              playerPosition.y,
-              playerShape,
-              field,
-              playerRotation
-            ).combined
-          ) {
-            onPositionChange(playerPosition.x + 1, playerPosition.y);
+          if (!evalCollision(player, field, 1, 0).combined) {
+            onPlayerMove({ ...player, x: player.x + 1 });
           }
           break;
         case "ArrowUp":
           event.preventDefault();
-          onRotationChange((playerRotation + 1) % 4);
+          onPlayerMove({ ...player, rotation: (player.rotation + 1) % 4 });
           break;
       }
     },
-    [
-      field,
-      fixed,
-      playerPosition,
-      playerShape,
-      playerRotation,
-      onPositionChange,
-      onRotationChange,
-    ]
+    [field, fixed, player, onPlayerMove]
   );
 
   /**

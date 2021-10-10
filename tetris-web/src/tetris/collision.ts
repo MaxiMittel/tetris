@@ -1,4 +1,4 @@
-import { Blocks, Rotation, Shape } from "../types";
+import { Block, Colors, Rotation, Shape } from "../types";
 import { shapeToCoordinates } from "./shapes";
 
 /**
@@ -8,19 +8,18 @@ import { shapeToCoordinates } from "./shapes";
  * @param shape     The shape to evaluate.
  * @param field     The field to evaluate against.
  * @param rotation  The rotation of the shape.
- * @returns         Object with the following properties: 
+ * @returns         Object with the following properties:
  *                      - outOfBounds: Shape will leave the bounds of the field.
  *                      - collision: Shape collides with another shape or the bottom.
- *                      - combined: Combined boolean of the both properties.            
+ *                      - combined: Combined boolean of the both properties.
  */
-export const evalCollision = (
-  x: number,
-  y: number,
-  shape: Shape,
-  field: Blocks[][],
-  rotation: Rotation
-) => {
-  const coordinates = shapeToCoordinates(x, y, shape, rotation);
+export const evalCollision = (player: Block, field: Colors[][], xOffset: number, yOffset: number) => {
+  const coordinates = shapeToCoordinates(
+    player.x + xOffset,
+    player.y + yOffset,
+    player.shape,
+    player.rotation
+  );
 
   const outOfBounds = coordinates.some(({ x, y }) => {
     return y < 0 || y >= field.length || x < 0 || x >= field[0].length;
@@ -28,7 +27,7 @@ export const evalCollision = (
 
   if (!outOfBounds) {
     let collision = coordinates.some(
-      ({ x, y }) => field[y][x] !== Blocks.EMPTY
+      ({ x, y }) => field[y][x] !== Colors.EMPTY
     );
 
     collision = collision || coordinates.some(({ x, y }) => y >= field.length);
