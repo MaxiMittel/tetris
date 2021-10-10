@@ -1,10 +1,20 @@
 import React from "react";
 
 interface Props {
-
+  authenticated: boolean;
+  buttonText: string;
+  children: any;
 }
 
-export const Navbar: React.FC<Props> = ({children}) => {
+export const Navbar: React.FC<Props> = (props: Props) => {
+  const openLink = () => {
+    if (props.authenticated) {
+      window.location.href = "/account";
+    } else {
+      window.location.href = "/signin";
+    }
+  };
+
   return (
     <div>
       <div className="page-wrapper with-navbar">
@@ -22,26 +32,20 @@ export const Navbar: React.FC<Props> = ({children}) => {
               </a>
             </li>
             <li className="nav-item">
-              <a href="/account" className="nav-link">
-                Account
+              <a href="/search" className="nav-link">
+                Search
               </a>
             </li>
           </ul>
-          <form
-            className="form-inline d-none d-md-flex ml-auto"
-            action="..."
-            method="..."
-          >
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search ..."
-              required
-            />
-            <button className="btn btn-primary" type="submit">
-              Sign up
+          <div className="form-inline d-none d-md-flex ml-auto">
+            <button
+              className="btn btn-primary"
+              type="submit"
+              onClick={openLink}
+            >
+              {props.buttonText}
             </button>
-          </form>
+          </div>
           <div className="navbar-content d-md-none ml-auto">
             <div className="dropdown with-arrow">
               <button
@@ -60,33 +64,25 @@ export const Navbar: React.FC<Props> = ({children}) => {
                 <a href="/play" className="dropdown-item">
                   Play
                 </a>
-                <a href="/account" className="dropdown-item">
-                  Account
+                <a href="/search" className="dropdown-item">
+                  Search
                 </a>
                 <div className="dropdown-divider"></div>
                 <div className="dropdown-content">
-                  <form action="..." method="...">
-                    <div className="form-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Email address"
-                        required
-                      />
-                    </div>
-                    <button className="btn btn-primary btn-block" type="submit">
-                      Sign up
-                    </button>
-                  </form>
+                  <button
+                    className="btn btn-primary btn-block"
+                    type="submit"
+                    onClick={openLink}
+                  >
+                    {props.buttonText}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </nav>
 
-        <div className="content-wrapper">
-          {children}
-        </div>
+        <div className="content-wrapper">{props.children}</div>
       </div>
     </div>
   );

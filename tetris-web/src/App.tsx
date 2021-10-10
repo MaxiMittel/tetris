@@ -10,6 +10,7 @@ import { Account } from "./components/Account";
 import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
 import { TetrisSocket } from "./components/TetrisSocket";
+import { Search } from "./components/Search";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar>
+      <Navbar authenticated={isAuth} buttonText={isAuth? "Account" : "Sign in"}>
         <BrowserRouter>
           <Switch>
             <Route path="/signin">
@@ -41,6 +42,7 @@ function App() {
             <Authenticated authenticated={isAuth} onAuthenticated={() => setAuth(true)}>
               <Route path="/account" component={Account} />
               <Route path="/" component={Lobbies} exact/>
+              <Route path="/search" component={Search} />
             </Authenticated>
           </Switch>
         </BrowserRouter>
