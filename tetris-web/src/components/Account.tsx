@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { Line } from "react-chartjs-2";
+import { useParams } from "react-router";
+import { getAuthenticatedUser } from "../api/account";
 import { getUser } from "../api/user";
 
 interface Props {}
@@ -10,24 +12,31 @@ export const Account: React.FC<Props> = (props: Props) => {
   const [username, setUsername] = React.useState<string>("");
   const [bio, setBio] = React.useState<string>("");
 
+  const { id } = useParams<any>();
+
   useEffect(() => {
-    const userInfo = getUser(0);
+    const userInfoPromise = id ? getUser(id) : getAuthenticatedUser();
 
-    setUsername(userInfo.username);
-    setBio(userInfo.description);
+    userInfoPromise
+      .then((repsonse: any) => {
+        const userInfo = repsonse.data;
+        setUsername(userInfo.username);
+        setBio(userInfo.description);
 
-    setHsData(
-      generateDiagramData(
-        userInfo.games.map((game) => game.score),
-        "#D11149"
-      )
-    );
-    setBpmData(
-      generateDiagramData(
-        userInfo.games.map((game) => game.bpm),
-        "#6610F2"
-      )
-    );
+        setHsData(
+          generateDiagramData(
+            userInfo.games.map((game: any) => game.score),
+            "#D11149"
+          )
+        );
+        setBpmData(
+          generateDiagramData(
+            userInfo.games.map((game: any) => game.bpm),
+            "#6610F2"
+          )
+        );
+      })
+      .catch((error: any) => console.log(error));
   }, []);
 
   return (
@@ -57,7 +66,7 @@ export const Account: React.FC<Props> = (props: Props) => {
 // Generate a data object for the chart
 const generateDiagramData = (data: any[], color: string) => {
   return {
-    labels: ["16.09", "16.09", "17.09", "17.09", "12:46", "12:55", "13:10"],
+    labels: ["-", "-", "-", "-", "-", "-", "-"],
     datasets: [
       {
         label: "Highscores",

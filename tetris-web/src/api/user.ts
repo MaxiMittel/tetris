@@ -1,9 +1,17 @@
-//import axios from "axios";
+import axios from "axios";
 
-//const BASE_URL = "/";
+const BASE_URL = "http://10.0.1.3:9090/user";
 
 export const getUser = (userID: number) => {
-    return {
+    return axios.get(`${BASE_URL}/get`,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+            id: userID
+        }
+      });
+    /*return {
         username: "John452",
         description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
         games: [
@@ -15,5 +23,5 @@ export const getUser = (userID: number) => {
             {score: 1150, bpm: 4.54, date: 1631647493076},
             {score: 1200, bpm: 5.1, date: 1631647493076}
         ]
-    }
+    }*/
 };

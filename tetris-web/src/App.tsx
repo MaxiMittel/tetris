@@ -41,6 +41,7 @@ function App() {
             <Route path="/tetris" component={TetrisSocket} />
             <Authenticated authenticated={isAuth} onAuthenticated={() => setAuth(true)}>
               <Route path="/account" component={Account} />
+              <Route path="/user/:id" component={Account} />
               <Route path="/" component={Lobbies} exact/>
               <Route path="/search" component={Search} />
             </Authenticated>

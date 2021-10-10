@@ -23,3 +23,11 @@ export const isAuthenticated = () => {
     },
   });
 }
+
+export const getAuthenticatedUser = () => {
+  return axios.get(`${BASE_URL}/getAuthenticatedUser`,{
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+}

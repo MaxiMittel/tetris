@@ -29,6 +29,22 @@ def getAccount():
         return jsonify({"error": "Invalid token"}), 401
     return jsonify({"message": "Success"})
 
+@app.route("/account/getAuthenticatedUser")
+def getAuthenticatedUser():
+    return jsonify({
+        "username": "John452",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
+        "games": [
+            {"score": 1000, "bpm": 4.56, "date": 1631647493076},
+            {"score": 1005, "bpm": 4.89, "date": 1631647493076},
+            {"score": 980, "bpm": 4.6, "date": 1631647493076},
+            {"score": 1100, "bpm": 3.2, "date": 1631647493076},
+            {"score": 1090, "bpm": 4.23, "date": 1631647493076},
+            {"score": 1150, "bpm": 4.54, "date": 1631647493076},
+            {"score": 1200, "bpm": 5.1, "date": 1631647493076}
+        ]
+    })
+
 @app.route("/account/signup", methods=['POST'])
 def signup():
     userID = "fnsjdfmf2d9jiw"
@@ -54,6 +70,22 @@ def search():
         "highscore": 187,
     }])
 
+
+@app.route("/user/get")
+def getUser():
+    return jsonify({
+        "username": "OtherUser",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
+        "games": [
+            {"score": 1000, "bpm": 4.56, "date": 1631647493076},
+            {"score": 1005, "bpm": 4.89, "date": 1631647493076},
+            {"score": 980, "bpm": 4.6, "date": 1631647493076},
+            {"score": 1100, "bpm": 3.2, "date": 1631647493076},
+            {"score": 1090, "bpm": 4.23, "date": 1631647493076},
+            {"score": 1150, "bpm": 4.54, "date": 1631647493076},
+            {"score": 1200, "bpm": 5.1, "date": 1631647493076}
+        ]
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9090, debug=True)
