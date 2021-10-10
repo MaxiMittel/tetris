@@ -64,6 +64,19 @@ code {
   justify-content: center;
 }
 
+/* Game */
+.gameContainer{
+  display: flex;
+  justify-content: center;
+  padding: 4em;
+}
+
+.canvasContainer{
+  background-color: rgb(13, 26, 72);
+  border: 7px solid #401b99;
+  border-radius: 10px;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;

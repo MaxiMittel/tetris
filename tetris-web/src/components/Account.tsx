@@ -37,7 +37,7 @@ export const Account: React.FC<Props> = (props: Props) => {
         );
       })
       .catch((error: any) => console.log(error));
-  }, []);
+  }, [id]);
 
   return (
     <div className="container-fluid">

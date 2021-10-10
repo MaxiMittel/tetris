@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { randomBlock } from "../tetris/blocks";
-import { Block, Colors, Rotation, Shape } from "../types";
+import { Block, Colors } from "../types";
 import { Tetris } from "./Tetris";
 
 interface Props {}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
-  const randInt = (min: number, max: number) => {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  };
 
   let fielda = new Array<Colors[]>(20);
 
@@ -25,11 +22,13 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <Tetris
-      field={field}
-      player={player}
-      onPlayerMove={(newPlayer: Block) => setPlayer(newPlayer)}
-      onBlockFix={onBlockFix}
-    ></Tetris>
+    <div className="gameContainer">
+      <Tetris
+        field={field}
+        player={player}
+        onPlayerMove={(newPlayer: Block) => setPlayer(newPlayer)}
+        onBlockFix={onBlockFix}
+      ></Tetris>
+    </div>
   );
 };

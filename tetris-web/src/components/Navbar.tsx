@@ -61,7 +61,7 @@ export const Navbar: React.FC<Props> = (props: Props) => {
                 className="dropdown-menu dropdown-menu-right w-200"
                 aria-labelledby="navbar-dropdown-toggle-btn-1"
               >
-                <a href="/play" className="dropdown-item">
+                <a href="/" className="dropdown-item">
                   Play
                 </a>
                 <a href="/search" className="dropdown-item">

@@ -1,4 +1,4 @@
-import { Block, Colors, Rotation, Shape } from "../types";
+import { Block, Colors } from "../types";
 import { shapeToCoordinates } from "./shapes";
 
 /**

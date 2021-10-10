@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { evalCollision } from "../tetris/collision";
 import { drawShape } from "../tetris/shapes";
-import { Block, Colors, Rotation, Shape } from "../types";
+import { Block, Colors } from "../types";
 import { Canvas } from "./Canvas";
 
 interface Props {
@@ -15,6 +15,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   const block_size = 25;
   const [gamefieldDisplay, setGameFieldDisplay] = React.useState(props.field);
   const fixPositionTimer = useRef<any>();
+  const moveDownInterval = useRef<any>();
 
   const { field, player, onBlockFix, onPlayerMove } = props;
 
@@ -26,6 +27,28 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   }, [player, field]);
 
   /**
+   * Move player down
+   */
+  const moveDown = useCallback(() => {
+    const collision = evalCollision(player, field, 0, 1);
+
+    if (!collision.combined) {
+      onPlayerMove({ ...player, y: player.y + 1 });
+    }
+  }, [player, field, onPlayerMove]);
+
+  /**
+   * Move player down every second
+   */
+  useEffect(() => {
+    moveDownInterval.current = setInterval(() => {
+      moveDown();
+    }, 1000);
+
+    return () => clearInterval(moveDownInterval.current);
+  }, [player, moveDown]);
+
+  /**
    * Check if the player collided with other Colors or the bottom of the gamefield
    */
   useEffect(() => {
@@ -33,7 +56,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
 
     if (collisionBelow.collision) {
       clearTimeout(fixPositionTimer.current);
-      fixPositionTimer.current = setTimeout(() => {        
+      fixPositionTimer.current = setTimeout(() => {
         onBlockFix(drawShape(player, field));
       }, 1000);
     }

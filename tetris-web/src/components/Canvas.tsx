@@ -83,7 +83,7 @@ export const Canvas: React.FC<Props> = (props: Props) => {
       ref={canvasRef}
       width={width}
       height={height}
-      style={{ backgroundColor: "#0d1a48" }}
+      className="canvasContainer"
     />
   );
 };
