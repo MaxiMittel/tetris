@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { randomBlock } from "../tetris/blocks";
 import { Block, Colors, Rotation, Shape } from "../types";
 import { Tetris } from "./Tetris";
 
@@ -15,24 +16,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     fielda[i] = new Array<Colors>(10).fill(Colors.EMPTY);
   }
 
-  const [player, setPlayer] = useState<Block>({
-    color: Colors.RED,
-    shape: Shape.T,
-    rotation: Rotation.UP,
-    x: 0,
-    y: 0,
-  });
+  const [player, setPlayer] = useState<Block>(randomBlock());
   const [field, setField] = useState(fielda);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
-    setPlayer({
-      color: randInt(1, 4),
-      shape: randInt(0, 4),
-      rotation: randInt(0, 3),
-      x: 0,
-      y: 0,
-    });
+    setPlayer(randomBlock());
   };
 
   return (

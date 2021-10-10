@@ -25,32 +25,41 @@ export const Canvas: React.FC<Props> = (props: Props) => {
      */
     const draw = (ctx: any) => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = "#0d1a48";
 
       for (let x = 0; x < field[0].length; x++) {
         for (let y = 0; y < field.length; y++) {
           if (field[y][x] === Colors.EMPTY) continue;
 
           const LINE_WIDTH = 3;
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = LINE_WIDTH;          
+          ctx.strokeStyle = "#0d1a48";
+          ctx.lineWidth = LINE_WIDTH;
 
           switch (field[y][x]) {
-            case Colors.BLUE:
-              ctx.fillStyle = "#00CAE0";
+            case Colors.ORANGE:
+              ctx.fillStyle = "#e56d23";
               break;
             case Colors.GREEN:
-              ctx.fillStyle = "#28E247";
+              ctx.fillStyle = "#16cc40";
               break;
             case Colors.RED:
-              ctx.fillStyle = "#FF500A";
+              ctx.fillStyle = "#d23542";
               break;
             case Colors.YELLOW:
-              ctx.fillStyle = "#FECB34";
+              ctx.fillStyle = "#f7ca18";
               break;
-            default:                
-                ctx.fillStyle = "#898989";
-                break;
+            case Colors.BLUE:
+              ctx.fillStyle = "#4a68dd";
+              break;
+            case Colors.CYAN:
+              ctx.fillStyle = "#5cddd7";
+              break;
+            case Colors.PURPLE:
+              ctx.fillStyle = "#960ac3";
+              break;
+            default:
+              ctx.fillStyle = "#898989";
+              break;
           }
 
           ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
@@ -74,7 +83,7 @@ export const Canvas: React.FC<Props> = (props: Props) => {
       ref={canvasRef}
       width={width}
       height={height}
-      style={{ backgroundColor: "black" }}
+      style={{ backgroundColor: "#0d1a48" }}
     />
   );
 };

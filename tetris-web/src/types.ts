@@ -7,10 +7,13 @@ export type Lobby = {
 
 export enum Colors {
     EMPTY,
-    BLUE,
+    ORANGE,
+    GREEN,
     RED,
     YELLOW,
-    GREEN,
+    BLUE,
+    CYAN,
+    PURPLE
 }
 
 export enum Shape {
