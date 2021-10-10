@@ -15,7 +15,6 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   const block_size = 25;
   const [gamefieldDisplay, setGameFieldDisplay] = React.useState(props.field);
   const fixPositionTimer = useRef<any>();
-  const [fixed, setFixed] = useState(false);
 
   const { field, player, onBlockFix, onPlayerMove } = props;
 
@@ -33,11 +32,9 @@ export const Tetris: React.FC<Props> = (props: Props) => {
     const collisionBelow = evalCollision(player, field, 0, 1);
 
     if (collisionBelow.collision) {
-      setFixed(true);
       clearTimeout(fixPositionTimer.current);
-      fixPositionTimer.current = setTimeout(() => {
+      fixPositionTimer.current = setTimeout(() => {        
         onBlockFix(drawShape(player, field));
-        setFixed(false);
       }, 1000);
     }
 
@@ -56,7 +53,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
 
           const collision = evalCollision(player, field, 0, 1);
 
-          if (!collision.combined && !fixed) {
+          if (!collision.combined) {
             onPlayerMove({ ...player, y: player.y + 1 });
           }
 
@@ -79,7 +76,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
           break;
       }
     },
-    [field, fixed, player, onPlayerMove]
+    [field, player, onPlayerMove]
   );
 
   /**
