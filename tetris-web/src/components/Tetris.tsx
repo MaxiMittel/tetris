@@ -1,39 +1,57 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { evalCollision } from "../tetris/collision";
 import { drawShape } from "../tetris/shapes";
-import { Block, Colors } from "../types";
+import { Colors, PlayerEntry } from "../types";
 import { Canvas } from "./Canvas";
 
 interface Props {
   field: Colors[][];
-  player: Block;
-  onPlayerMove: (player: Block) => void;
+  player: PlayerEntry;
+  players: PlayerEntry[];
+  onPlayerMove: (player: PlayerEntry) => void;
   onBlockFix: (field: Colors[][]) => void;
 }
 
 export const Tetris: React.FC<Props> = (props: Props) => {
   const block_size = 25;
   const [gamefieldDisplay, setGameFieldDisplay] = React.useState(props.field);
+  const drawInterval = useRef<any>();
   const fixPositionTimer = useRef<any>();
   const moveDownInterval = useRef<any>();
 
-  const { field, player, onBlockFix, onPlayerMove } = props;
+  const { field, player, players, onBlockFix, onPlayerMove } = props;
 
   /**
    * Draw the player shape on the gamefield
    */
   useEffect(() => {
-    setGameFieldDisplay(drawShape(player, field));
-  }, [player, field]);
+    drawInterval.current = setInterval(async () => {
+      let newField = drawShape(player.block, field);
+      for(let i = 0; i < players.length; i++) {
+        if(players[i].block){
+          newField = drawShape(players[i].block, newField);
+        }
+      }
+      setGameFieldDisplay(newField);
+    }, 20);
+
+    return () => clearInterval(drawInterval.current);
+  }, [player, field, players]);
 
   /**
    * Move player down
    */
   const moveDown = useCallback(() => {
-    const collision = evalCollision(player, field, 0, 1);
+    const collision = evalCollision(player.block, field, 0, 1);
 
     if (!collision.combined) {
-      onPlayerMove({ ...player, y: player.y + 1 });
+      onPlayerMove({
+        ...player,
+        block: {
+          ...player.block,
+          y: player.block.y + 1
+        }
+      });
     }
   }, [player, field, onPlayerMove]);
 
@@ -52,12 +70,12 @@ export const Tetris: React.FC<Props> = (props: Props) => {
    * Check if the player collided with other Colors or the bottom of the gamefield
    */
   useEffect(() => {
-    const collisionBelow = evalCollision(player, field, 0, 1);
+    const collisionBelow = evalCollision(player.block, field, 0, 1);
 
     if (collisionBelow.collision) {
       clearTimeout(fixPositionTimer.current);
       fixPositionTimer.current = setTimeout(() => {
-        onBlockFix(drawShape(player, field));
+        onBlockFix(drawShape(player.block, field));
       }, 1000);
     }
 
@@ -74,28 +92,28 @@ export const Tetris: React.FC<Props> = (props: Props) => {
         case "ArrowDown":
           event.preventDefault();
 
-          const collision = evalCollision(player, field, 0, 1);
+          const collision = evalCollision(player.block, field, 0, 1);
 
           if (!collision.combined) {
-            onPlayerMove({ ...player, y: player.y + 1 });
+            onPlayerMove({ ...player, block: { ...player.block, y: player.block.y + 1 }});
           }
 
           break;
         case "ArrowLeft":
           event.preventDefault();
-          if (!evalCollision(player, field, -1, 0).combined) {
-            onPlayerMove({ ...player, x: player.x - 1 });
+          if (!evalCollision(player.block, field, -1, 0).combined) {
+            onPlayerMove({ ...player, block: { ...player.block,x: player.block.x - 1 }});
           }
           break;
         case "ArrowRight":
           event.preventDefault();
-          if (!evalCollision(player, field, 1, 0).combined) {
-            onPlayerMove({ ...player, x: player.x + 1 });
+          if (!evalCollision(player.block, field, 1, 0).combined) {
+            onPlayerMove({ ...player, block: { ...player.block,x: player.block.x + 1 }});
           }
           break;
         case "ArrowUp":
           event.preventDefault();
-          onPlayerMove({ ...player, rotation: (player.rotation + 1) % 4 });
+          onPlayerMove({ ...player, block: { ...player.block, rotation: (player.block.rotation + 1) % 4 }});
           break;
       }
     },
@@ -119,6 +137,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
       height={field.length * block_size}
       field={gamefieldDisplay}
       blockSize={block_size}
+      players={[...players, player]}
     />
   );
 };
