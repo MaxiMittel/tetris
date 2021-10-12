@@ -52,7 +52,8 @@ const blockList = [
   },
 ];
 
-export const randomBlock = () => {
+export const randomBlock = (x: number) => {
   const index = Math.floor(Math.random() * blockList.length);
-  return blockList[index];
+  const block = {...blockList[index], x};
+  return block;
 };

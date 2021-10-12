@@ -11,6 +11,9 @@ import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
 import { TetrisSocket } from "./components/TetrisSocket";
 import { Search } from "./components/Search";
+import { Chat } from "./components/Chat";
+import { LobbyInfo } from "./components/LobbyInfo";
+import { ChatMessage } from "./types";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -26,6 +29,29 @@ function App() {
       .then((response) => setAuth(response.data.message === "Success"))
       .catch(() => setAuth(false));
   }, []);
+
+  const messages = [
+    { id: "a", message: "Hi" },
+    { id: "b", message: "Hello" },
+    { id: "c", message: "How are you?" },
+    { id: "a", message: "I'm fine" },
+    { id: "e", message: "How are you?" },
+    { id: "a", message: "I'm fine" },
+    { id: "a", message: "How are you?" },
+    { id: "h", message: "I'm fine" },
+    { id: "i", message: "How are you?" },
+    { id: "a", message: "I'm fine" },
+    { id: "k", message: "How are you?" },
+    { id: "a", message: "I'm fine" },
+  ];
+
+  const players = [
+    { id: "a", username: "John" },
+    { id: "a", username: "John" },
+    { id: "a", username: "John" },
+    { id: "a", username: "John" },
+    { id: "a", username: "John" },
+  ];
 
   return (
     <div className="App">
@@ -45,6 +71,7 @@ function App() {
               <Route path="/" component={Lobbies} exact/>
               <Route path="/search" component={Search} />
             </Authenticated>
+            
           </Switch>
         </BrowserRouter>
       </Navbar>
