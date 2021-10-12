@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { evalCollision } from "../tetris/collision";
 import { drawShape } from "../tetris/shapes";
-import { Block, Colors } from "../types";
+import { Block, Colors, PlayerEntry } from "../types";
 import { Canvas } from "./Canvas";
 
 interface Props {
   field: Colors[][];
   player: Block;
+  players: PlayerEntry[];
   onPlayerMove: (player: Block) => void;
   onBlockFix: (field: Colors[][]) => void;
 }
@@ -14,17 +15,28 @@ interface Props {
 export const Tetris: React.FC<Props> = (props: Props) => {
   const block_size = 25;
   const [gamefieldDisplay, setGameFieldDisplay] = React.useState(props.field);
+  const drawInterval = useRef<any>();
   const fixPositionTimer = useRef<any>();
   const moveDownInterval = useRef<any>();
 
-  const { field, player, onBlockFix, onPlayerMove } = props;
+  const { field, player, players, onBlockFix, onPlayerMove } = props;
 
   /**
    * Draw the player shape on the gamefield
    */
   useEffect(() => {
-    setGameFieldDisplay(drawShape(player, field));
-  }, [player, field]);
+    drawInterval.current = setInterval(async () => {
+      let newField = drawShape(player, field);
+      for(let i = 0; i < players.length; i++) {
+        if(players[i].block){
+          newField = drawShape(players[i].block, newField);
+        }
+      }
+      setGameFieldDisplay(newField);
+    }, 20);
+
+    return () => clearInterval(drawInterval.current);
+  }, [player, field, players]);
 
   /**
    * Move player down

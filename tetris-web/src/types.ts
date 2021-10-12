@@ -38,3 +38,9 @@ export type Block = {
     x: number,
     y: number
 }
+
+export type PlayerEntry = {
+    id: string;
+    username: string;
+    block: Block;
+  };
