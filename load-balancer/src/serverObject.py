@@ -1,15 +1,14 @@
-class gameServerObject(object):
+class serverObject(object):
 
-    def __init__(self,ip,port,name,serverType,metric=None):
+    def __init__(self,ip,port,name,metric=100):
         self.__ip = ip
         self.__port = port
         self.__name = name
-        self.__serverType = serverType
         self.__metric = metric
 
 
-    def makeGameServerObject(ip,port,name,serverType):
-        return gameServerObject(ip,port,name,serverType)
+    def makeServerObject(ip,port,name):
+        return serverObject(ip,port,name)
 
 
     def getIp(self):
@@ -20,9 +19,6 @@ class gameServerObject(object):
 
     def getName(self):
         return self.__name
-
-    def getServerType(self):
-        return self.__serverType
 
     def getMetric(self):
         return self.__metric
