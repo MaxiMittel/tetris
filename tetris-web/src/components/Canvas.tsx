@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import { Colors } from "../types";
+import { Colors, PlayerEntry } from "../types";
 
 interface Props {
   width: number;
   height: number;
   field: Colors[][];
+  players: PlayerEntry[];
   blockSize: number;
 }
 
 export const Canvas: React.FC<Props> = (props: Props) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { field, blockSize, width, height } = props;
+  const { field, blockSize, width, height, players } = props;
 
   /**
    * Render loop
@@ -66,6 +67,22 @@ export const Canvas: React.FC<Props> = (props: Props) => {
           ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
         }
       }
+
+      // Draw player names
+      for (let i = 0; i < players.length; i++) {
+        const player = players[i];
+
+        if(player.block){
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "11px Arial";
+          ctx.fillText(
+            `${player.username}`,
+            player.block.x * blockSize + 10,
+            player.block.y * blockSize - blockSize / 2
+          );
+          }
+      }
+
     };
 
     if (canvas) {
@@ -76,7 +93,7 @@ export const Canvas: React.FC<Props> = (props: Props) => {
     return () => {
       window.cancelAnimationFrame(animation);
     };
-  }, [field, blockSize]);
+  }, [field, blockSize, players]);
 
   return (
     <canvas

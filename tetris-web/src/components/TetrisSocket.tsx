@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { randomBlock } from "../tetris/blocks";
-import { Block, Colors, PlayerEntry } from "../types";
+import { Colors, PlayerEntry } from "../types";
 import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 
@@ -18,7 +18,11 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     fielda[i] = new Array<Colors>(10).fill(Colors.EMPTY);
   }
 
-  const [player, setPlayer] = useState<Block>(randomBlock());
+  const [player, setPlayer] = useState<PlayerEntry>({
+    id: id,
+    username: username,
+    block: randomBlock(),
+  });
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
   const [field, setField] = useState(fielda);
 
@@ -44,42 +48,40 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     });
 
     // Player updates
-    socket.on("onPlayerUpdate", (response) => {     
+    socket.on("onPlayerUpdate", (response) => {
       console.log("update");
-      if(response.id !== id) {
-        setPlayers((players) => {          
-          let player = players.find((p) => p.id === response.id);          
+      if (response.id !== id) {
+        setPlayers((players) => {
+          let player = players.find((p) => p.id === response.id);
           if (player) {
             player.block = response.block;
           }
           return players;
         });
       }
-
     });
-    
 
     // Field update
-    socket.on("onFieldUpdate", (response) => {      
+    socket.on("onFieldUpdate", (response) => {
       setField(response.field);
     });
   }, [players]);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
-    setPlayer(randomBlock());
+    setPlayer((player) => { player.block = randomBlock(); return player; });
     socket.emit("fieldUpdate", { room: room, field: newField });
   };
 
-  const onPlayerMove = (newPlayer: Block) => {
+  const onPlayerMove = (newPlayer: PlayerEntry) => {
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
       room: room,
       id: id,
-      block: newPlayer,
+      block: newPlayer.block,
       time: Date.now(),
     });
-  }
+  };
 
   return (
     <div className="gameContainer">
