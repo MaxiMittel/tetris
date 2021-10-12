@@ -77,6 +77,71 @@ code {
   border-radius: 10px;
 }
 
+/* Tab */
+.tab-header{
+  height: 50px;
+}
+
+.tab-item{
+  margin: 10px;
+  padding-bottom: 10px;
+  cursor: pointer;
+}
+
+.tab-item-selected{
+  margin: 10px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.player-item{
+  background-color: #26282b;
+  padding: 8px 15px 8px 15px;
+  border-radius: 999999px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.player-item:hover{
+  background-color: #3e4147;
+}
+
+/* Chat */
+.chat-message-container{
+  padding-bottom: 10px;
+  height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.chat-message{
+  background-color: #26282b;
+  padding: 8px 15px 8px 15px;
+  border-radius: 20px;
+  display: inline-block;
+  max-width: 200px;
+}
+
+.chat-left{
+  display: flex;
+  justify-content: flex-start;
+  margin: 5px 10px 5px 10px;
+}
+
+.chat-right{
+  display: flex;
+  justify-content: flex-end;
+  margin: 5px 10px 5px 10px;
+}
+
+.chat-right > .chat-message{
+  background-color: #1990ff;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;

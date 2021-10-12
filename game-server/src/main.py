@@ -1,5 +1,5 @@
 from flask import Flask, request
-from flask_socketio import SocketIO, rooms, send, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 import json
 
@@ -10,7 +10,6 @@ app.config['SECRET_KEY'] = 'CHANGE_SECRET!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 database = {} # {'room_name': {'players': [{'sid': string, 'username': string, 'id': string}], 'game': {'field': []}}}
-clients = []
 
 @socketio.on('join')
 def join(data):
@@ -19,11 +18,7 @@ def join(data):
     id = data['id']
     sid = request.sid
 
-    print("join", sid)
-
     join_room(room_name)
-
-    clients.append(sid)
 
     if room_name not in database:
         database[room_name] = {'players': [], 'game': {'field': []}}
@@ -65,6 +60,14 @@ def field_update(data):
     #TODO: check if row is complete
 
     emit('onFieldUpdate', {"field": field}, room=room_name)
+
+@socketio.on("chatMessage")
+def chat_message(data):
+    room_name = data['room']
+    message = data['msg']
+
+    emit("onChatMessage", {"message": message}, room=room_name)
+
 
 
 if __name__ == '__main__':

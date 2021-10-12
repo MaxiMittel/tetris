@@ -44,3 +44,8 @@ export type PlayerEntry = {
     username: string;
     block: Block;
   };
+
+export type ChatMessage = {
+    id: string;
+    message: string;
+};
