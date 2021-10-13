@@ -88,19 +88,19 @@ class Tetris:
             # Then we need an array of players that can be looped through containing the respective figure for each player
             # Starting positions: P1 (3,0), P2 (width-3, 0)
             self.figure[0] = Figure(3, 0)
-            self.figure[1] = Figure (self.width - 3, 0)
+            self.figure[1] = Figure(self.width - 4, 0)
         elif players == 3:
             # Starting positions: P1 (3,0), P2 (11, 0), P3(width-3,0)
             self.figure[0] = Figure(3, 0)
             self.figure[1] = Figure(8, 0)
-            self.figure[2] = Figure(self.width - 3, 0)
+            self.figure[2] = Figure(self.width - 4, 0)
         else:
             # Only up to four players supported
             # Starting positions: P1 (3,0), P2 (11, 0), P3(19, 0), P4(width-3, 0)
             self.figure[0] = Figure(3, 0)
             self.figure[1] = Figure(8, 0)
             self.figure[2] = Figure(15, 0)
-            self.figure[3] = Figure(self.width - 3, 0)
+            self.figure[3] = Figure(self.width - 4, 0)
 
     # Check if the currently moving object is intersecting with another object
     def intersects(self, index):
@@ -113,6 +113,25 @@ class Tetris:
                             j + self.figure[index].x < 0 or \
                             self.field[i + self.figure[index].y][j + self.figure[index].x] > 0:
                         intersection = True
+        return intersection
+
+    def intersect_side(self, index):
+        intersection = False
+        form_coordinates = [None]
+        # Fill the list with self coordinates
+        for i in range(4):
+            for j in range(4):
+                if i * 4 + j in self.figure[index].image():
+                    form_coordinates.append((i + self.figure[index].x, j + self.figure[index].y))
+
+        for z in range(len(self.figure)):
+            if self.figure[z] is not self.figure[index]:
+                for i in range(4):
+                    for j in range(4):
+                        if i * 4 + j in self.figure[z].image():
+                            if (i + self.figure[z].x, j + self.figure[z].y) in form_coordinates:
+                                return True
+
         return intersection
 
     # Do we have a full line on the game field then we need to break it and raise the score
@@ -159,7 +178,7 @@ class Tetris:
     def go_side(self, dx, index):
         old_x = self.figure[index].x
         self.figure[index].x += dx
-        if self.intersects(index):
+        if self.intersects(index) or self.intersect_side(index):
             self.figure[index].x = old_x
 
     def rotate(self):
@@ -188,17 +207,21 @@ done = False
 clock = pygame.time.Clock()
 fps = 25
 
-# original: Tetris(20,10) Todo: Adapt the gameBoardSize depending on the amount of people playing
-number_of_players = 3;
+# original: Tetris(20,10)
+number_of_players = 2;
 # Gameboard size depending on the number of players: 1) 20x10 2) 26x16 3) 29x19) 4) 32x22
-game = Tetris(number_of_players * 3 + 20 if number_of_players > 1 else 20, number_of_players * 3 + 10 if number_of_players > 1 else 10, number_of_players)
+game = Tetris(number_of_players * 3 + 20 if number_of_players > 1 else 20,
+              number_of_players * 3 + 10 if number_of_players > 1 else 10, number_of_players)
 counter = 0
 
 pressing_down = False
 
+# TODO: The tetris game evaluates depending on the newest row -> E.g. right now all players moves will be replaced
+# after the first player reaches the end
+
 # game loop
 while not done:
-    #TODO: Could lead to problems but needs to be tested (maybe check all figures?)
+    # TODO: Could lead to problems but needs to be tested (maybe check all figures?)
     if game.figure[0] is None:
         game.new_figure(number_of_players)
         print(game.figure)
@@ -211,7 +234,7 @@ while not done:
             game.go_down()
 
     # Track the users keyboard input
-    #TODO: Control of the bricks only works for one player so far
+    # TODO: Control of the bricks only works for one player so far
     # the rest just goes down without moving
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -222,7 +245,7 @@ while not done:
             if event.key == pygame.K_DOWN:
                 pressing_down = True
             if event.key == pygame.K_LEFT:
-                game.go_side(-1, 0)   # Second argument is figure index
+                game.go_side(-1, 0)  # Second argument is figure index
             if event.key == pygame.K_RIGHT:
                 game.go_side(1, 0)
             if event.key == pygame.K_SPACE:
@@ -252,9 +275,9 @@ while not done:
                 for o in range(len(game.figure)):
                     if p in game.figure[o].image():
                         pygame.draw.rect(screen, colors[game.figure[o].color],
-                                        [game.x + game.zoom * (j + game.figure[o].x) + 1,
-                                        game.y + game.zoom * (i + game.figure[o].y) + 1,
-                                        game.zoom - 2, game.zoom - 2])
+                                         [game.x + game.zoom * (j + game.figure[o].x) + 1,
+                                          game.y + game.zoom * (i + game.figure[o].y) + 1,
+                                          game.zoom - 2, game.zoom - 2])
 
     font = pygame.font.SysFont('Calibri', 25, True, False)
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
@@ -271,3 +294,4 @@ while not done:
     clock.tick(fps)
 
 pygame.quit()
+
