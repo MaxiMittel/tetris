@@ -12,6 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 clients = []
 players = []
 gameField = []
+score = 0
 
 @socketio.on('join')
 def join(data):
@@ -94,7 +95,32 @@ def player_update(data):
 def field_update(data):
     gameField = data['field']
 
-    #TODO: check if row is complete
+    # Check if block in first row -> game lost
+    for block in gameField[0]:
+        if block != 0:
+            sendAll('onGameOver', players) #TODO: send score
+            break
+
+    completeRows = []
+
+    # Search for complete rows
+    for row in gameField:
+        isComplete = True
+        for block in row:
+            if block == 0:
+                isComplete = False
+                break
+
+        if isComplete:
+            completeRows.append(row)
+
+    # Remove complete rows
+    for row in completeRows:
+        gameField.remove(row) #TODO: add score
+
+    # Add new row
+    for _ in range(len(completeRows)):
+        gameField.insert(0, [0] * 10)
 
     sendAll('onFieldUpdate', gameField)
 
