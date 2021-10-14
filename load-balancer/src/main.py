@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+from requests.exceptions import ConnectionError
 from flask_cors import CORS
 from serverObject import serverObject as so
 
@@ -113,8 +114,13 @@ def forwardGetRequest(forwardpath):
     api = __pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
-        response = requests.get(url= endpoint)
-        return jsonify(response.text)
+
+        try:
+            response = requests.get(url= endpoint)
+            return jsonify(response.json())
+            
+        except (ConnectionError):
+            return jsonify({"status": "error: API-server offline"})
     else:
         return jsonify({"status": "error: No API-server registered"})
 
@@ -129,8 +135,13 @@ def forwardPostRequest(forwardpath):
     api = __pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
-        response = requests.post(url= endpoint, json= content)
-        return jsonify(response.text)
+
+        try:
+            response = requests.post(url= endpoint, json= content)
+            return jsonify(response.json())
+
+        except (ConnectionError):
+            return jsonify({"status": "error: API-server offline"})
     else:
         return jsonify({"status": "error: No API-server registered"})
 
