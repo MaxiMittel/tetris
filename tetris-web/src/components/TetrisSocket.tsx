@@ -5,12 +5,10 @@ import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 import { LobbyInfo } from "./LobbyInfo";
 
-const socket = io("ws://10.0.1.3:5000");
-const room = "vally";
 const username = "Maxi" + Math.floor(Math.random() * 100);
 const id = "1" + Math.floor(Math.random() * 100);
 
-const fieldSize = {x: 40, y: 20};
+const fieldSize = { x: 10, y: 20 };
 
 interface Props {}
 
@@ -24,99 +22,136 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [player, setPlayer] = useState<PlayerEntry>({
     id: id,
     username: username,
-    block: randomBlock(Math.floor(Math.random() * fieldSize.x-2) + 2),
+    block: randomBlock(Math.floor(Math.random() * fieldSize.x - 2) + 2),
+    ready: false,
   });
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
   const [field, setField] = useState(fielda);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [gameRunning, setGameRunning] = useState(false);
+  const [socket, setSocket] = useState<any>(null);
+
+  useEffect(() => {
+    const newSocket = io("ws://localhost:5000");
+    setSocket(newSocket);
+    return () => {
+      newSocket.close();
+      return;
+    };
+  }, [setSocket]);
 
   /**
    * Join the room
    */
   useEffect(() => {
-    socket.emit("join", { room: room, username: username, id: id });
-  }, []);
+    if (socket) {
+      socket.emit("join", { username: username, id: id });
+    }
+  }, [socket]);
 
   /**
    * React to socket events
    */
   useEffect(() => {
+    if (!socket) return;
+
     // New player joins
-    socket.on("onJoin", (response) => {
-      //Insert new player
-      response.players.forEach((player: any) => {
-        if (!players.some((p) => p.id === player.id)) {
-          setPlayers((players) => [...players, player]);
-        }
-      });
+    socket.on("onJoin", (response: any) => {
+      setPlayers(response);
+    });
+
+    // New player joins
+    socket.on("onLeave", (response: any) => {
+      setPlayers(response);
     });
 
     // Player updates
-    socket.on("onPlayerUpdate", (response) => {
-      console.log("update");
-      if (response.id !== id) {
-        setPlayers((players) => {
-          let player = players.find((p) => p.id === response.id);
-          if (player) {
-            player.block = response.block;
-          }
-          return players;
-        });
-      }
+    socket.on("onPlayerUpdate", (response: any) => {
+      setPlayers(response);
     });
 
     // Field update
-    socket.on("onFieldUpdate", (response) => {
-      setField(response.field);
+    socket.on("onFieldUpdate", (response: any) => {
+      setField(response);
     });
 
     // Chat message
-    socket.on("onChatMessage", (response) => {
+    socket.on("onChatMessage", (response: any) => {
+      console.log("Message received");
       setChatMessages((messages) => [...messages, response.message]);
     });
 
-  }, [players]);
+    // Player ready
+    socket.on("onPlayerReady", (response: any) => {
+      console.log(response);
+      
+      setPlayers(response);
+    });
+
+    socket.on("onGameStart", (response: any) => {
+      setGameRunning(true);
+    });
+  }, [socket]);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
     setPlayer((player) => {
-      player.block = randomBlock(Math.floor(Math.random() * fieldSize.x-2) + 2);
+      player.block = randomBlock(
+        Math.floor(Math.random() * fieldSize.x - 2) + 2
+      );
       return player;
     });
-    socket.emit("fieldUpdate", { room: room, field: newField });
+    socket.emit("fieldUpdate", { field: newField });
   };
 
   const onPlayerMove = (newPlayer: PlayerEntry) => {
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
-      room: room,
       id: id,
       block: newPlayer.block,
-      time: Date.now(),
     });
   };
 
   const sendChatMessage = (message: ChatMessage) => {
-    socket.emit("chatMessage", { room: room, msg: message });
+    console.log("message");
+    socket.emit("chatMessage", { msg: message });
+  };
+
+  const onReady = () => {
+    setPlayerReady(true);
+    socket.emit("playerReady", { id: id });
   };
 
   return (
     <div className="gameContainer">
       <LobbyInfo
-        players={players.map((p) => {
-          return { username: p.username, id: p.id };
-        })}
-        userId={id}
         messages={chatMessages}
         onMessage={sendChatMessage}
-      ></LobbyInfo>
-      <Tetris
-        field={field}
-        player={player}
-        players={players}
-        onPlayerMove={onPlayerMove}
-        onBlockFix={onBlockFix}
-      ></Tetris>
+        userId={id}
+        players={players.map((p) => {
+          return { username: p.username, id: p.id, ready: p.ready };
+        })}
+      />
+      {gameRunning && (
+        <Tetris
+          field={field}
+          player={player}
+          players={players.filter((p) => p.id !== id)}
+          onPlayerMove={onPlayerMove}
+          onBlockFix={onBlockFix}
+        ></Tetris>
+      )}
+      {!gameRunning && (
+        <div className="waiting-container">
+          <p className="waiting-text">Waiting for other players...</p>
+          {!playerReady && (
+            <button className="btn btn-primary" onClick={onReady}>
+              Ready
+            </button> 
+          )}
+        </div>
+      )}
     </div>
   );
 };

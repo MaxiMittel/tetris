@@ -18,7 +18,7 @@ export const Chat: React.FC<Props> = (props: Props) => {
       });
       setMsg("");
     }
-  }
+  };
 
   return (
     <div className="chat-container">
@@ -32,20 +32,31 @@ export const Chat: React.FC<Props> = (props: Props) => {
           </div>
         ))}
       </div>
-      <div className="input-group">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Message..."
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-        />
-        <div className="input-group-append">
-          <button className="btn btn-primary" type="button" onClick={sendMessage}>
-            Send
-          </button>
+      <form
+        onSubmit={(e: any) => {
+          e.preventDefault();
+          sendMessage();
+        }}
+      >
+        <div className="input-group">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Message..."
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          />
+          <div className="input-group-append">
+            <button
+              className="btn btn-primary"
+              type="submit"
+              onClick={sendMessage}
+            >
+              Send
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

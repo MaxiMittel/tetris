@@ -43,6 +43,7 @@ export type PlayerEntry = {
     id: string;
     username: string;
     block: Block;
+    ready: boolean;
   };
 
 export type ChatMessage = {
