@@ -6,11 +6,11 @@ interface Props {
   messages: ChatMessage[];
   userId: string;
   onMessage: (message: ChatMessage) => void;
-  players: { username: string; id: string }[];
+  players: { username: string; id: string, ready: boolean }[];
 }
 
 export const LobbyInfo: React.FC<Props> = (props: Props) => {
-  const [tab, setTab] = React.useState<"players" | "chat">("chat");
+  const [tab, setTab] = React.useState<"players" | "chat">("players");  
 
   return (
     <div className="w-300 card">
@@ -31,7 +31,10 @@ export const LobbyInfo: React.FC<Props> = (props: Props) => {
       {tab === "players" && (
         <div>
           {props.players.map((player, index) => (
-            <div className="player-item" key={index}>{player.username}</div>
+            <div className="player-item" key={index}>
+              <span>{player.username}</span>
+                <span className={player.ready? "player-item-ready" : ""}/>
+              </div>
           ))}
         </div>
       )}

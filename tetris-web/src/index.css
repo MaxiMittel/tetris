@@ -102,10 +102,19 @@ code {
   border-radius: 999999px;
   margin: 5px;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
 }
 
 .player-item:hover{
   background-color: #3e4147;
+}
+
+.player-item-ready{
+  height: 20px;
+  width: 20px;
+  background-color: #3adb40;
+  border-radius: 50%;
 }
 
 /* Chat */
@@ -140,6 +149,20 @@ code {
 
 .chat-right > .chat-message{
   background-color: #1990ff;
+}
+
+/* Lobby */
+.waiting-container{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin-left: 2em;
+}
+
+.waiting-text{
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
 /* Scrollbar */

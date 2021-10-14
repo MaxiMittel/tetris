@@ -9,68 +9,104 @@ CORS(app)
 app.config['SECRET_KEY'] = 'CHANGE_SECRET!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-database = {} # {'room_name': {'players': [{'sid': string, 'username': string, 'id': string}], 'game': {'field': []}}}
+clients = []
+players = []
+gameField = []
 
 @socketio.on('join')
 def join(data):
-    room_name = data['room']
     username = data['username']
     id = data['id']
-    sid = request.sid
 
-    join_room(room_name)
+    join_room(request.sid)
 
-    if room_name not in database:
-        database[room_name] = {'players': [], 'game': {'field': []}}
-    else:
-        # TODO: check if player is already in room
-        database[room_name]['players'].append({'sid': sid, 'username': username, 'id': id})
+    clients.append(request.sid)
+    players.append({'username': username, "sid": request.sid, 'id': id, "ready": False, "block": False})
 
-    emit('onJoin', {"players": database[room_name]['players']}, room=room_name)
-        
+    sendAll('onJoin', players)
 
 @socketio.on('leave')
-def leave(data):
-    room_name = data['room']
+def on_leave():
     sid = request.sid
+    print("leave")
 
-    print("leave", sid)
+    leave_room(sid)
 
-    leave_room(room_name)
+    for i in range(len(players)):
+        if players[i]['sid'] == sid:
+            del players[i]
+            break
 
-    if room_name in database:
-        database[room_name]['players'] = [player for player in database[room_name]['players'] if player['sid'] != sid]
+    for i in range(len(clients)):
+        if clients[i] == sid:
+            del clients[i]
+            break
 
-    emit('onLeave', {"players": database[room_name]['players']}, room=room_name)
+    sendAll('onLeave', players)
+
+@socketio.on('disconnect')
+def on_disconnect():
+    sid = request.sid
+    print("disconnect")
+
+    leave_room(sid)
+
+    for i in range(len(players)):
+        if players[i]['sid'] == sid:
+            del players[i]
+            break
+
+    for i in range(len(clients)):
+        if clients[i] == sid:
+            del clients[i]
+            break
+
+    sendAll('onLeave', players)
+
+@socketio.on("playerReady")
+def player_ready(data):
+    id = data['id']
+
+    for player in players:
+        if player['id'] == id:
+            player['ready'] = True
+
+    all_ready = all([player['ready'] for player in players])
+
+    print(players)
+
+    if all_ready:
+        sendAll('onGameStart', players)
+    else:
+        sendAll('onPlayerReady', players)
 
 @socketio.on('playerUpdate')
 def player_update(data):
-    room_name = data['room']
     id = data['id']
-    block = data['block']
-    
-    emit('onPlayerUpdate', {'id': id, 'block': block}, room=room_name)
 
+    for player in players:
+        if player['id'] == id:
+            player['block'] = data['block']
+
+    sendAll('onPlayerUpdate', players)
 
 @socketio.on('fieldUpdate')
 def field_update(data):
-    room_name = data['room']
-    field = data['field']
+    gameField = data['field']
 
     #TODO: check if row is complete
 
-    emit('onFieldUpdate', {"field": field}, room=room_name)
+    sendAll('onFieldUpdate', gameField)
 
 @socketio.on("chatMessage")
 def chat_message(data):
-    room_name = data['room']
     message = data['msg']
 
-    emit("onChatMessage", {"message": message}, room=room_name)
+    sendAll("onChatMessage", {"message": message})
 
-
+def sendAll(action, message):
+    for client in clients:
+        emit(action, message, room=client)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
-
-
