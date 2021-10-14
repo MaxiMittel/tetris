@@ -33,7 +33,7 @@ Register a GameServer or API server to the load balancer.
 
 ``POST /usage``
 
-Peridically update the utilization of every server.
+Periodically update the utilization of every server.
 ```json
 >> {
     "ip": "0.0.0.0",    //IP-Adress of the server
