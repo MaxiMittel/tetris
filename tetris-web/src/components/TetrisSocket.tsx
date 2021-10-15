@@ -59,6 +59,10 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     if (!socket) return;
 
+    socket.on("disconnect", () => {
+      console.log("disconnected");
+    })
+
     // New player joins
     socket.on("onJoin", (response: any) => {
       setPlayers(response);
