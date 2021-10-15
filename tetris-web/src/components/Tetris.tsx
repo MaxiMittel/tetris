@@ -32,8 +32,8 @@ export const Tetris: React.FC<Props> = (props: Props) => {
         ...player,
         block: {
           ...player.block,
-          y: player.block.y + 1
-        }
+          y: player.block.y + 1,
+        },
       });
     }
   }, [player, field, onPlayerMove]);
@@ -41,19 +41,18 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   /**
    * Draw the player shape on the gamefield
    */
-   useEffect(() => {
+  useEffect(() => {
     drawInterval.current = setInterval(async () => {
-
       //Move a block after one second
-      if(Date.now() - lastMoveDown.current > 1000){
+      if (Date.now() - lastMoveDown.current > 1000) {
         moveDown();
         lastMoveDown.current = Date.now();
       }
 
       //Draw all players to the gamefield
       let newField = drawShape(player.block, field);
-      for(let i = 0; i < players.length; i++) {
-        if(players[i].block){
+      for (let i = 0; i < players.length; i++) {
+        if (players[i].block) {
           newField = drawShape(players[i].block, newField);
         }
       }
@@ -84,7 +83,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
    * @param event Keyboard event
    */
   const onKeyDownHandler = useCallback(
-    (event: any) => {      
+    (event: any) => {
       switch (event.key) {
         case "ArrowDown":
           event.preventDefault();
@@ -92,25 +91,70 @@ export const Tetris: React.FC<Props> = (props: Props) => {
           const collision = evalCollision(player.block, field, 0, 1);
 
           if (!collision.combined) {
-            onPlayerMove({ ...player, block: { ...player.block, y: player.block.y + 1 }});
+            onPlayerMove({
+              ...player,
+              block: { ...player.block, y: player.block.y + 1 },
+            });
           }
 
           break;
         case "ArrowLeft":
           event.preventDefault();
           if (!evalCollision(player.block, field, -1, 0).combined) {
-            onPlayerMove({ ...player, block: { ...player.block,x: player.block.x - 1 }});
+            onPlayerMove({
+              ...player,
+              block: { ...player.block, x: player.block.x - 1 },
+            });
           }
           break;
         case "ArrowRight":
           event.preventDefault();
           if (!evalCollision(player.block, field, 1, 0).combined) {
-            onPlayerMove({ ...player, block: { ...player.block,x: player.block.x + 1 }});
+            onPlayerMove({
+              ...player,
+              block: { ...player.block, x: player.block.x + 1 },
+            });
           }
           break;
         case "ArrowUp":
           event.preventDefault();
-          onPlayerMove({ ...player, block: { ...player.block, rotation: (player.block.rotation + 1) % 4 }});
+          let newRotation = (player.block.rotation + 1) % 4;
+          let legalPosition = false;
+          let yOff = 0;
+          let xOff = 0;
+
+          //Try 10 times to get a valid position
+          for (let i = 0; i < 10; i++) {
+            const collision = evalCollision(
+              player.block,
+              field,
+              xOff,
+              yOff,
+              newRotation
+            );            
+            
+            if (!collision.combined) {
+              legalPosition = true;
+              break;
+            }
+
+            if (collision.outOfBounds.bottom) yOff--;
+            if (collision.outOfBounds.top) yOff++;
+            if (collision.outOfBounds.left) xOff++;
+            if (collision.outOfBounds.right) xOff--;
+          }
+
+          if (legalPosition) {
+            onPlayerMove({
+              ...player,
+              block: {
+                ...player.block,
+                x: player.block.x + xOff,
+                y: player.block.y + yOff,
+                rotation: newRotation,
+              },
+            });
+          }
           break;
         case " ":
           event.preventDefault();
@@ -118,7 +162,10 @@ export const Tetris: React.FC<Props> = (props: Props) => {
           while (!evalCollision(player.block, field, 0, yDiff).combined) {
             yDiff++;
           }
-          onPlayerMove({ ...player, block: { ...player.block,y: player.block.y + (yDiff - 1) }});
+          onPlayerMove({
+            ...player,
+            block: { ...player.block, y: player.block.y + (yDiff - 1) },
+          });
           break;
       }
     },

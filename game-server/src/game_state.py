@@ -27,6 +27,9 @@ class GameState:
     def add_score(self, score):
         self.score += score
 
+    def get_score(self):
+        return self.score
+
     def is_ready(self):
         return all([player['ready'] for player in self.players])
 
