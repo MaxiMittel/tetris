@@ -73,7 +73,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
       clearTimeout(fixPositionTimer.current);
       fixPositionTimer.current = setTimeout(() => {
         onBlockFix(drawShape(player.block, field));
-      }, 1000);
+      }, 500);
     }
 
     return () => clearTimeout(fixPositionTimer.current);

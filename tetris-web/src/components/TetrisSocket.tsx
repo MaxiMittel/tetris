@@ -5,6 +5,7 @@ import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 import { LobbyInfo } from "./LobbyInfo";
 
+const room = "asdasd132s";
 const username = "Maxi" + Math.floor(Math.random() * 100);
 const id = "1" + Math.floor(Math.random() * 100);
 
@@ -46,7 +47,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
    */
   useEffect(() => {
     if (socket) {
-      socket.emit("join", { username: username, id: id });
+      socket.emit("join", { room, username: username, id: id });
     }
   }, [socket]);
 
@@ -102,12 +103,13 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       );
       return player;
     });
-    socket.emit("fieldUpdate", { field: newField });
+    socket.emit("fieldUpdate", { room, field: newField });
   };
 
   const onPlayerMove = (newPlayer: PlayerEntry) => {    
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
+      room,
       id: id,
       block: newPlayer.block,
     });
@@ -115,12 +117,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
   const sendChatMessage = (message: ChatMessage) => {
     console.log("message");
-    socket.emit("chatMessage", { msg: message });
+    socket.emit("chatMessage", { room, msg: message });
   };
 
   const onReady = () => {
     setPlayerReady(true);
-    socket.emit("playerReady", { id: id });
+    socket.emit("playerReady", { room, id: id });
   };
 
   return (
