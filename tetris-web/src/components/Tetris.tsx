@@ -84,7 +84,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
    * @param event Keyboard event
    */
   const onKeyDownHandler = useCallback(
-    (event: any) => {
+    (event: any) => {      
       switch (event.key) {
         case "ArrowDown":
           event.preventDefault();
@@ -111,6 +111,14 @@ export const Tetris: React.FC<Props> = (props: Props) => {
         case "ArrowUp":
           event.preventDefault();
           onPlayerMove({ ...player, block: { ...player.block, rotation: (player.block.rotation + 1) % 4 }});
+          break;
+        case " ":
+          event.preventDefault();
+          let yDiff = 0;
+          while (!evalCollision(player.block, field, 0, yDiff).combined) {
+            yDiff++;
+          }
+          onPlayerMove({ ...player, block: { ...player.block,y: player.block.y + (yDiff - 1) }});
           break;
       }
     },
