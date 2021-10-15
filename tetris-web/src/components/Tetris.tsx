@@ -157,7 +157,7 @@ export const Tetris: React.FC<Props> = (props: Props) => {
           }
           break;
         case " ":
-          event.preventDefault();
+          //event.preventDefault();
           let yDiff = 0;
           while (!evalCollision(player.block, field, 0, yDiff).combined) {
             yDiff++;

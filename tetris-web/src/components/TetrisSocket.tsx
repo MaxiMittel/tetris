@@ -23,7 +23,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [player, setPlayer] = useState<PlayerEntry>({
     id: id,
     username: username,
-    block: randomBlock(Math.floor(Math.random() * fieldSize.x - 2) + 2),
+    block: randomBlock(randInt(0, fieldSize.x - 3)),
     ready: false,
   });
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
@@ -85,8 +85,6 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
     // Player ready
     socket.on("onPlayerReady", (response: any) => {
-      console.log(response);
-      
       setPlayers(response);
     });
 
@@ -98,15 +96,13 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
     setPlayer((player) => {
-      player.block = randomBlock(
-        Math.floor(Math.random() * fieldSize.x - 2) + 2
-      );
+      player.block = randomBlock(randInt(0, fieldSize.x - 4));
       return player;
     });
     socket.emit("fieldUpdate", { room, field: newField });
   };
 
-  const onPlayerMove = (newPlayer: PlayerEntry) => {    
+  const onPlayerMove = (newPlayer: PlayerEntry) => {
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
       room,
@@ -150,10 +146,15 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
           {!playerReady && (
             <button className="btn btn-primary" onClick={onReady}>
               Ready
-            </button> 
+            </button>
           )}
         </div>
       )}
     </div>
   );
+};
+
+//min,max (inclusive)
+const randInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
