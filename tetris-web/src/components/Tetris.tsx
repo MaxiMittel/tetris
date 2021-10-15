@@ -17,26 +17,9 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   const [gamefieldDisplay, setGameFieldDisplay] = React.useState(props.field);
   const drawInterval = useRef<any>();
   const fixPositionTimer = useRef<any>();
-  const moveDownInterval = useRef<any>();
+  const lastMoveDown = useRef<number>(Date.now());
 
   const { field, player, players, onBlockFix, onPlayerMove } = props;
-
-  /**
-   * Draw the player shape on the gamefield
-   */
-  useEffect(() => {
-    drawInterval.current = setInterval(async () => {
-      let newField = drawShape(player.block, field);
-      for(let i = 0; i < players.length; i++) {
-        if(players[i].block){
-          newField = drawShape(players[i].block, newField);
-        }
-      }
-      setGameFieldDisplay(newField);
-    }, 20);
-
-    return () => clearInterval(drawInterval.current);
-  }, [player, field, players]);
 
   /**
    * Move player down
@@ -56,15 +39,29 @@ export const Tetris: React.FC<Props> = (props: Props) => {
   }, [player, field, onPlayerMove]);
 
   /**
-   * Move player down every second
+   * Draw the player shape on the gamefield
    */
-  useEffect(() => {
-    moveDownInterval.current = setInterval(() => {
-      moveDown();
-    }, 1000);
+   useEffect(() => {
+    drawInterval.current = setInterval(async () => {
 
-    return () => clearInterval(moveDownInterval.current);
-  }, [player, moveDown]);
+      //Move a block after one second
+      if(Date.now() - lastMoveDown.current > 1000){
+        moveDown();
+        lastMoveDown.current = Date.now();
+      }
+
+      //Draw all players to the gamefield
+      let newField = drawShape(player.block, field);
+      for(let i = 0; i < players.length; i++) {
+        if(players[i].block){
+          newField = drawShape(players[i].block, newField);
+        }
+      }
+      setGameFieldDisplay(newField);
+    }, 20);
+
+    return () => clearInterval(drawInterval.current);
+  }, [player, field, players, moveDown]);
 
   /**
    * Check if the player collided with other Colors or the bottom of the gamefield

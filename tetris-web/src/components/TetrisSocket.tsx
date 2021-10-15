@@ -105,7 +105,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     socket.emit("fieldUpdate", { field: newField });
   };
 
-  const onPlayerMove = (newPlayer: PlayerEntry) => {
+  const onPlayerMove = (newPlayer: PlayerEntry) => {    
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
       id: id,
