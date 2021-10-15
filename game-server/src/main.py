@@ -88,7 +88,7 @@ def field_update(data):
     # Check if block in first row -> game lost
     for block in gameField[0]:
         if block != 0:
-            sendAll('onGameOver', room, game[room].get_score())
+            sendAll('onGameOver', room, {"score": game[room].get_score()})
             break
 
     completeRows = []

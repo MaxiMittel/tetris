@@ -31,6 +31,8 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [playerReady, setPlayerReady] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [lobbyText, setLobbyText] = useState("Waiting for other players...");
   const [socket, setSocket] = useState<any>(null);
 
   useEffect(() => {
@@ -91,6 +93,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     socket.on("onGameStart", (response: any) => {
       setGameRunning(true);
     });
+
+    socket.on("onGameOver", (response: any) => {
+      setLobbyText(`Game over! Score: ${response.score}`);
+      setGameOver(true);
+      setGameRunning(false);
+    });
   }, [socket]);
 
   const onBlockFix = (newField: Colors[][]) => {
@@ -142,11 +150,16 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       )}
       {!gameRunning && (
         <div className="waiting-container">
-          <p className="waiting-text">Waiting for other players...</p>
+          <p className="waiting-text">{lobbyText}</p>
           {!playerReady && (
             <button className="btn btn-primary" onClick={onReady}>
               Ready
             </button>
+          )}
+          {gameOver && (
+            <a href="/" ><button className="btn btn-primary" onClick={onReady}>
+              Continue
+            </button></a>
           )}
         </div>
       )}
