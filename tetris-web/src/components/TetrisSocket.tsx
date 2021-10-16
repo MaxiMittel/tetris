@@ -5,6 +5,7 @@ import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 import { LobbyInfo } from "./LobbyInfo";
 
+const room = "asdasd132s";
 const username = "Maxi" + Math.floor(Math.random() * 100);
 const id = "1" + Math.floor(Math.random() * 100);
 
@@ -22,7 +23,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [player, setPlayer] = useState<PlayerEntry>({
     id: id,
     username: username,
-    block: randomBlock(Math.floor(Math.random() * fieldSize.x - 2) + 2),
+    block: randomBlock(randInt(0, fieldSize.x - 3)),
     ready: false,
   });
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
@@ -30,6 +31,8 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [playerReady, setPlayerReady] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [lobbyText, setLobbyText] = useState("Waiting for other players...");
   const [socket, setSocket] = useState<any>(null);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
    */
   useEffect(() => {
     if (socket) {
-      socket.emit("join", { username: username, id: id });
+      socket.emit("join", { room, username: username, id: id });
     }
   }, [socket]);
 
@@ -55,6 +58,10 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
    */
   useEffect(() => {
     if (!socket) return;
+
+    socket.on("disconnect", () => {
+      console.log("disconnected");
+    })
 
     // New player joins
     socket.on("onJoin", (response: any) => {
@@ -84,30 +91,33 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
     // Player ready
     socket.on("onPlayerReady", (response: any) => {
-      console.log(response);
-      
       setPlayers(response);
     });
 
     socket.on("onGameStart", (response: any) => {
       setGameRunning(true);
     });
+
+    socket.on("onGameOver", (response: any) => {
+      setLobbyText(`Game over! Score: ${response.score}`);
+      setGameOver(true);
+      setGameRunning(false);
+    });
   }, [socket]);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
     setPlayer((player) => {
-      player.block = randomBlock(
-        Math.floor(Math.random() * fieldSize.x - 2) + 2
-      );
+      player.block = randomBlock(randInt(0, fieldSize.x - 4));
       return player;
     });
-    socket.emit("fieldUpdate", { field: newField });
+    socket.emit("fieldUpdate", { room, field: newField });
   };
 
   const onPlayerMove = (newPlayer: PlayerEntry) => {
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
+      room,
       id: id,
       block: newPlayer.block,
     });
@@ -115,12 +125,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
   const sendChatMessage = (message: ChatMessage) => {
     console.log("message");
-    socket.emit("chatMessage", { msg: message });
+    socket.emit("chatMessage", { room, msg: message });
   };
 
   const onReady = () => {
     setPlayerReady(true);
-    socket.emit("playerReady", { id: id });
+    socket.emit("playerReady", { room, id: id });
   };
 
   return (
@@ -144,14 +154,24 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       )}
       {!gameRunning && (
         <div className="waiting-container">
-          <p className="waiting-text">Waiting for other players...</p>
+          <p className="waiting-text">{lobbyText}</p>
           {!playerReady && (
             <button className="btn btn-primary" onClick={onReady}>
               Ready
-            </button> 
+            </button>
+          )}
+          {gameOver && (
+            <a href="/" ><button className="btn btn-primary" onClick={onReady}>
+              Continue
+            </button></a>
           )}
         </div>
       )}
     </div>
   );
+};
+
+//min,max (inclusive)
+const randInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };

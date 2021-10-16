@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
-import json
+from game_state import GameState
 
 app = Flask(__name__)
 CORS(app)
@@ -9,96 +9,86 @@ CORS(app)
 app.config['SECRET_KEY'] = 'CHANGE_SECRET!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-clients = []
-players = []
-gameField = []
-score = 0
+game = {} # {room: GameState}
+clients = {} # {sid: room}
 
+"""
+Client joins a room
+"""
 @socketio.on('join')
 def join(data):
+    room = data['room']
     username = data['username']
     id = data['id']
-
-    join_room(request.sid)
-
-    clients.append(request.sid)
-    players.append({'username': username, "sid": request.sid, 'id': id, "ready": False, "block": False})
-
-    sendAll('onJoin', players)
-
-@socketio.on('leave')
-def on_leave():
     sid = request.sid
-    print("leave")
 
-    leave_room(sid)
+    join_room(sid)
+    clients[sid] = room
 
-    for i in range(len(players)):
-        if players[i]['sid'] == sid:
-            del players[i]
-            break
+    if room not in game:
+        game[room] = GameState()
 
-    for i in range(len(clients)):
-        if clients[i] == sid:
-            del clients[i]
-            break
+    game[room].add_player(username, id, sid)
 
-    sendAll('onLeave', players)
+    sendAll('onJoin', room, game[room].get_players())
 
+"""
+Client disconnects
+"""
 @socketio.on('disconnect')
 def on_disconnect():
     sid = request.sid
-    print("disconnect")
 
     leave_room(sid)
+    room = clients[sid]
+    game[room].remove_player(sid)
+    clients.pop(sid, None)
 
-    for i in range(len(players)):
-        if players[i]['sid'] == sid:
-            del players[i]
-            break
+    if game[room].is_empty():
+        game.pop(room, None)
+        return
 
-    for i in range(len(clients)):
-        if clients[i] == sid:
-            del clients[i]
-            break
+    sendAll('onLeave', room, game[room].get_players())
 
-    sendAll('onLeave', players)
-
+"""
+Client in the lobby changes to ready
+"""
 @socketio.on("playerReady")
 def player_ready(data):
+    room = data['room']
     id = data['id']
 
-    for player in players:
-        if player['id'] == id:
-            player['ready'] = True
+    game[room].set_player_ready(id)
 
-    all_ready = all([player['ready'] for player in players])
-
-    print(players)
-
-    if all_ready:
-        sendAll('onGameStart', players)
+    if game[room].is_ready():
+        sendAll('onGameStart', room, game[room].get_players())
     else:
-        sendAll('onPlayerReady', players)
+        sendAll('onPlayerReady', room, game[room].get_players())
 
+"""
+Update a player's position
+"""
 @socketio.on('playerUpdate')
 def player_update(data):
+    room = data['room']
     id = data['id']
 
-    for player in players:
-        if player['id'] == id:
-            player['block'] = data['block']
+    game[room].update_player(id, data["block"])
 
-    sendAll('onPlayerUpdate', players)
+    sendAll('onPlayerUpdate', room, game[room].get_players())
 
+"""
+Update the game field
+"""
 @socketio.on('fieldUpdate')
 def field_update(data):
+    room = data['room']
     gameField = data['field']
 
     # Check if block in first row -> game lost
     for block in gameField[0]:
         if block != 0:
-            sendAll('onGameOver', players) #TODO: send score
+            sendAll('onGameOver', room, {"score": game[room].get_score()})
             break
 
     completeRows = []
@@ -114,24 +104,35 @@ def field_update(data):
         if isComplete:
             completeRows.append(row)
 
+    game[room].add_score(len(completeRows))
+
     # Remove complete rows
     for row in completeRows:
-        gameField.remove(row) #TODO: add score
+        gameField.remove(row)
 
     # Add new row
     for _ in range(len(completeRows)):
         gameField.insert(0, [0] * 10)
 
-    sendAll('onFieldUpdate', gameField)
+    game[room].set_field(gameField)
 
+    sendAll('onFieldUpdate', room, gameField)
+
+"""
+Send a chat message
+"""
 @socketio.on("chatMessage")
 def chat_message(data):
+    room = data['room']
     message = data['msg']
 
-    sendAll("onChatMessage", {"message": message})
+    sendAll("onChatMessage", room, {"message": message})
 
-def sendAll(action, message):
-    for client in clients:
+"""
+Send a message to all clients in a room
+"""
+def sendAll(action, room, message):
+    for client in game[room].get_clients():
         emit(action, message, room=client)
 
 if __name__ == '__main__':

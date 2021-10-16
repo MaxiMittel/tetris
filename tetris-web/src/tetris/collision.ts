@@ -13,17 +13,38 @@ import { shapeToCoordinates } from "./shapes";
  *                      - collision: Shape collides with another shape or the bottom.
  *                      - combined: Combined boolean of the both properties.
  */
-export const evalCollision = (player: Block, field: Colors[][], xOffset: number, yOffset: number) => {
+export const evalCollision = (
+  player: Block,
+  field: Colors[][],
+  xOffset: number,
+  yOffset: number,
+  rotation?: number
+) => {
   const coordinates = shapeToCoordinates(
     player.x + xOffset,
     player.y + yOffset,
     player.shape,
-    player.rotation
+    rotation || player.rotation
   );
 
-  const outOfBounds = coordinates.some(({ x, y }) => {
-    return y < 0 || y >= field.length || x < 0 || x >= field[0].length;
+  const outOfBoundsTop = coordinates.some(({ x, y }) => {
+    return y < 0;
   });
+
+  const outOfBoundsLeft = coordinates.some(({ x, y }) => {
+    return x < 0;
+  });
+
+  const outOfBoundsRight = coordinates.some(({ x, y }) => {
+    return x > field[0].length - 1;
+  });
+
+  const outOfBoundsBottom = coordinates.some(({ x, y }) => {
+    return y > field.length - 1;
+  });
+
+  const outOfBounds =
+    outOfBoundsTop || outOfBoundsLeft || outOfBoundsRight || outOfBoundsBottom;
 
   if (!outOfBounds) {
     let collision = coordinates.some(
@@ -33,14 +54,24 @@ export const evalCollision = (player: Block, field: Colors[][], xOffset: number,
     collision = collision || coordinates.some(({ x, y }) => y >= field.length);
 
     return {
-      outOfBounds,
+      outOfBounds: {
+        top: outOfBoundsTop,
+        left: outOfBoundsLeft,
+        right: outOfBoundsRight,
+        bottom: outOfBoundsBottom,
+      },
       collision,
       combined: outOfBounds || collision,
     };
   }
 
   return {
-    outOfBounds,
+    outOfBounds: {
+      top: outOfBoundsTop,
+      left: outOfBoundsLeft,
+      right: outOfBoundsRight,
+      bottom: outOfBoundsBottom,
+    },
     collision: false || coordinates.some(({ x, y }) => y >= field.length),
     combined: true,
   };

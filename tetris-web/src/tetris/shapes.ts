@@ -217,7 +217,11 @@ export const drawShape = (player: Block, field: Colors[][]) => {
   });
 
   shapeToDraw.forEach(({ x, y }) => {
-    fieldCopy[y][x] = player.color;
+    try{
+      fieldCopy[y][x] = player.color;
+    }catch(e){
+      console.log(e);
+    }
   });
 
   return fieldCopy;

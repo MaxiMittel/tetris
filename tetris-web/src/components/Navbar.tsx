@@ -21,7 +21,7 @@ export const Navbar: React.FC<Props> = (props: Props) => {
         <nav className="navbar">
           <a href="/" className="navbar-brand">
             <img
-              src="https://www.gethalfmoon.com/static/halfmoon/img/hm-logo-white.svg"
+              src="logo_text.png"
               alt="logo"
             />
           </a>
