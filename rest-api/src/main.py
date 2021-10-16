@@ -27,12 +27,16 @@ def signup():
     Sign up a new user.
     """
     content = request.json
-    userID = content["username"]
-    password = content["password"]
-    mail = content["mail"]
-    token = jwt.encode({"id": userID}, SECRET , algorithm="HS256")
-    newAccount = {'_id': userID, 'password': password, 'mail': mail, 'auth': token, 'stats': []}
-    return dbSignup(newAccount, token)
+    if (content):
+        username = content["username"]
+        password = content["password"]
+        mail = content["mail"]
+        token = jwt.encode({"id": username}, SECRET , algorithm="HS256")
+        newAccount = {"username": username, "password": password, "mail": mail, "auth": token, "highscore": 0, "stats": [ ] }
+        return dbSignup(newAccount, username, token)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
 
 
 @app.route("/account/signin", methods=['POST'])
@@ -41,9 +45,13 @@ def signin():
     Sign in an existing user
     """
     content = request.json
-    userID = content["username"]
-    enteredPassword = content["password"]
-    return dbSignin(userID, enteredPassword)
+    if (content):
+        userID = content["username"]
+        enteredPassword = content["password"]
+        return dbSignin(userID, enteredPassword)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
 
 
 @app.route("/user/get", methods=['GET'])
@@ -51,33 +59,68 @@ def getUser():
     """
     Returns the account informations of the logged in user.
     """
-    return jsonify({
-        "username": "OtherUser",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
-        "games": [
-            {"score": 1000, "bpm": 4.56, "date": 1631647493076},
-            {"score": 1005, "bpm": 4.89, "date": 1631647493076},
-            {"score": 980, "bpm": 4.6, "date": 1631647493076},
-            {"score": 1100, "bpm": 3.2, "date": 1631647493076},
-            {"score": 1090, "bpm": 4.23, "date": 1631647493076},
-            {"score": 1150, "bpm": 4.54, "date": 1631647493076},
-            {"score": 1200, "bpm": 5.1, "date": 1631647493076}
-        ]
-    })
+    content = request.json
+    if (content):
+        userID = verify_jwt(content["auth"])
+        return dbGetUser(userID)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg, "username": "", "stats": ""})
 
+
+@app.route("/account/update", methods=['POST'])
+def update():
+    """ 
+    Updates the current users username.
+    """
+    content = request.json
+    if (content):
+        auth = content["auth"]
+        userID = verify_jwt(auth)
+        newUsername = content["username"]
+        newAuth = jwt.encode({"id": newUsername}, SECRET , algorithm="HS256")
+        return dbUpdateUser(userID, newUsername, newAuth)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
+
+
+@app.route("/account/poststat", methods=['POST'])
+def postStat():
+    """
+    Post the result of one game
+    """
+    content = request.json
+    if (content):
+        auth = content["auth"]
+        userID = verify_jwt(auth)
+        stat = content["gamescore"]
+        return dbPostStat(userID, stat)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg})
 
 
 @app.route("/user/search", methods=['GET'])
 def search():
-    return jsonify([{
-        "id": "fnsjdfmf2d9jiw",
-        "name": "John Lorenz Moser",
-        "highscore": 1187,
-    },{
-        "id": "fnsjdfmf2d9jiw",
-        "name": "Kristoffer Jonas Klauß",
-        "highscore": 187,
-    }])
+    """
+    Search for other users.
+    """
+    content = request.json
+    if (content):
+        userList = content["query"]
+        return dbFindUsers(userList)
+    else:
+        msg = "No arguements passed"
+        return jsonify({"status": "error", "error": msg})
+
+
+@app.route("/user?id=<id>", methods=['GET'])
+def getUserById():
+    """
+    Get user informations by their id.
+    """
+    pass
 
 
 @app.route("/account/isAuthenticated")
@@ -106,9 +149,6 @@ def getAuthenticatedUser():
             {"score": 1200, "bpm": 5.1, "date": 1631647493076}
         ]
     })
-
-
-
 
 
 if __name__ == '__main__':

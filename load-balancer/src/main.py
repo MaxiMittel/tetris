@@ -111,12 +111,13 @@ def forwardGetRequest(forwardpath):
     Forwards ``GET``request to an API server and returns the response to the client.
 
     """
+    content = request.json
     api = __pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
         try:
-            response = requests.get(url= endpoint)
+            response = requests.get(url= endpoint, json= content)
             return jsonify(response.json())
             
         except (ConnectionError):

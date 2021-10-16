@@ -73,6 +73,8 @@ Returns the account informations of the logged in user.
 
 ```json
 << {
+    "status": "success/error",
+    "error": "error/empty",
     "username": "",     //Username
     "stats": {}         //Game stats
 }
@@ -87,27 +89,48 @@ Updates the current user.
 ```json
 >> {
     "auth": "8fmnfuojgahknldj",   //Json Web Token
-    "username": "",     //Username
-    "stats": {}         //Game stats
+    "username": "",               //Username
 }
 ```
 
 ```json
 << {
-    "username": "",     //Username
-    "stats": {}         //Game stats
+    "status": "success/error",
+    "error": "error/empty",
+    "username": "",             //Username
+    "auth": "8fmnfuojgahknldj", //Json Web Token
 }
 ```
 
 ---
 
-`POST /search`
+`POST /account/postgamescore`
+
+Post the result of one game
+
+```json
+>> {
+    "auth": "",          //Authentication of user
+    "gamescore": {}      //Game stats = {"score": score, "bpm": bpm, "date": date}
+}
+```
+
+```json
+<< {
+    "status": "success/error",
+    "error": "error/empty
+}
+```
+
+---
+
+`POST /user/search`
 
 Search for other users.
 
 ```json
 >> {
-    "query": "",     //Search query
+    "query": ["username1", "username2", "username3"]     //Search query
 }
 ```
 
