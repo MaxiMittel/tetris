@@ -3,6 +3,7 @@ from flask import jsonify
 from flask_pymongo import pymongo
 from pymongo.errors import DuplicateKeyError, OperationFailure
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 
 # Connection to monogodb atlas
 dbUri = "mongodb+srv://dbUser:dbUserPassword@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority"
@@ -45,7 +46,7 @@ def dbSignup(newAccount, username, token):
 def dbSignin(userID, enteredPassword):
     try:
         projection = { "_id": 0, "username": 1, "password": 1, "auth": 1}
-        result  = userData.find_one( {'username': userID }, projection)
+        result  = userData.find_one( {"username": userID }, projection)
         
         if result ["password"] != enteredPassword:
             return jsonify({"status": "error", "error": "Wrong password", "auth": "", "username": ""})
@@ -129,9 +130,23 @@ def dbFindUsers(userList):
             return jsonify({"users": json_data})
 
         except OperationFailure:
-            return jsonify({"status": "error", "error": "Operation Failure"})
+            return jsonify({"users": ""})
 
         except Exception as e:
-            return jsonify({"status": "error", "error": e.__class__.__name__})
+            return jsonify({"users": ""})
     else:
-        return jsonify({"status": "error", "error": "Empty userlist"})
+        return jsonify({"users": ""})
+
+
+        
+def dbFindUserById(id):
+    try:
+        projection = {"_id": 1, "username": 1, "stats": 1}
+        result = userData.find_one({"_id": ObjectId(id) }, projection)
+        return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"]})
+
+    except OperationFailure:
+        return jsonify({"id": "", "username": "", "stats": ""})
+
+    except Exception as e:
+        return jsonify({"id": "", "username": "", "stats": "", "error": e.__class__.__name__})

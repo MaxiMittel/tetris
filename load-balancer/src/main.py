@@ -120,8 +120,11 @@ def forwardGetRequest(forwardpath):
             response = requests.get(url= endpoint, json= content)
             return jsonify(response.json())
             
-        except (ConnectionError):
+        except ConnectionError:
             return jsonify({"status": "error: API-server offline"})
+
+        except Exception as e:
+            return jsonify({"status": e.__class__.__name__})
     else:
         return jsonify({"status": "error: No API-server registered"})
 
@@ -141,8 +144,12 @@ def forwardPostRequest(forwardpath):
             response = requests.post(url= endpoint, json= content)
             return jsonify(response.json())
 
-        except (ConnectionError):
+        except ConnectionError:
             return jsonify({"status": "error: API-server offline"})
+
+        except Exception as e:
+            return jsonify({"status": e.__class__.__name__})
+
     else:
         return jsonify({"status": "error: No API-server registered"})
 

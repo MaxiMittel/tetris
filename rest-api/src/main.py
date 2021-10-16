@@ -115,14 +115,17 @@ def search():
         return jsonify({"status": "error", "error": msg})
 
 
-@app.route("/user?id=<id>", methods=['GET'])
+@app.route("/user/getbyid", methods=['GET'])
 def getUserById():
     """
     Get user informations by their id.
     """
-    pass
+    content = request.json
+    id = content["id"]
+    return dbFindUserById(str(id))
 
 
+"""
 @app.route("/account/isAuthenticated")
 def getAccount():
     token = request.headers.get("Authorization")
@@ -149,7 +152,7 @@ def getAuthenticatedUser():
             {"score": 1200, "bpm": 5.1, "date": 1631647493076}
         ]
     })
-
+"""
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9090, debug=True)

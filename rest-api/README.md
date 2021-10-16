@@ -153,9 +153,15 @@ Search for other users.
 
 ---
 
-`GET /user?id=<id>`
+`GET /user/getbyid`
 
 Get user informations by their id.
+
+```json
+>> {
+    "id": "1231ahtr435cvb345"      //User id
+}
+```
 
 ```json
 << {
