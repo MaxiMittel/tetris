@@ -1,13 +1,11 @@
 from flask import Flask, request, jsonify
 import requests
-from requests.exceptions import ConnectionError
 from flask_cors import CORS
 from serverObject import serverObject as so
 
 app = Flask(__name__)
 CORS(app)
 
-#Dictionary -> key: server name, value: gameServerObject 
 __gameServerDict = {}
 __apiServerDict = {}
 
@@ -21,7 +19,6 @@ def index():
 def registerServer():
     """ 
     Register a GameServer or API server to the load balancer.
-
     """
     content = request.json 
     if __registerCheck(content):
@@ -35,9 +32,9 @@ def registerServer():
             __apiServerDict[content["name"]] = api
 
         else:
-            return jsonify({"status": "error: Servertype not recognised"})
+            return jsonify({"status": "error"})
 
-        return jsonify({"status": "success: Server was registerd"})
+        return jsonify({"status": "success"})
 
     else:
         return jsonify({"status": "error"})
@@ -47,7 +44,6 @@ def registerServer():
 def unregisterServer():
     """ 
     Unregister a GameServer or API server from the load balancer.
-
     """
     pass
 
@@ -56,7 +52,6 @@ def unregisterServer():
 def heartbeat():
     """ 
     Periodically update the utilization of every server.
-
     """
     content = request.json
     serverName = content["name"]
@@ -64,12 +59,12 @@ def heartbeat():
     gameServer = __gameServerDict.get(serverName)
     if gameServer:
         gameServer.setMetric(content["usage"])
-        return jsonify({"status": "success: gs - thump thump "})
+        return jsonify({"status": "success"})
 
     apiServer = __apiServerDict.get(serverName)
     if apiServer:
         apiServer.setMetric(content["usage"])
-        return jsonify({"status": "success: api - thump thump"})
+        return jsonify({"status": "success"})
     
     return jsonify({"status": "error"})
 
@@ -82,7 +77,6 @@ def allocate():
 
     Returns: 
     The server with the best/lowest metric value in json-format
-
     """
     gameServer = __pickLeastLoadedGameServer()
     if gameServer:
@@ -109,7 +103,6 @@ def migrateSingleGameSession():
 def forwardGetRequest(forwardpath):
     """
     Forwards ``GET``request to an API server and returns the response to the client.
-
     """
     content = request.json
     api = __pickLeastLoadedApiServer()
@@ -120,20 +113,16 @@ def forwardGetRequest(forwardpath):
             response = requests.get(url= endpoint, json= content)
             return jsonify(response.json())
             
-        except ConnectionError:
-            return jsonify({"status": "error: API-server offline"})
-
         except Exception as e:
-            return jsonify({"status": e.__class__.__name__})
+            return jsonify({"status": "error"})
     else:
-        return jsonify({"status": "error: No API-server registered"})
+        return jsonify({"status": "error"})
 
 
 @app.route("/api/<path:forwardpath>", methods=['POST'])
 def forwardPostRequest(forwardpath):
     """
     Forwards ``POST``request to an API server and returns the response to the client.
-
     """
     content = request.json
     api = __pickLeastLoadedApiServer()
@@ -144,14 +133,11 @@ def forwardPostRequest(forwardpath):
             response = requests.post(url= endpoint, json= content)
             return jsonify(response.json())
 
-        except ConnectionError:
-            return jsonify({"status": "error: API-server offline"})
-
         except Exception as e:
-            return jsonify({"status": e.__class__.__name__})
+            return jsonify({"status": "error"})
 
     else:
-        return jsonify({"status": "error: No API-server registered"})
+        return jsonify({"status": "error"})
 
 
 ########## Private methods below ##################
@@ -203,4 +189,5 @@ def __pickLeastLoadedApiServer():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7777, debug=True)
+    app.run(host='0.0.0.0', port=7777, debug=False)
+

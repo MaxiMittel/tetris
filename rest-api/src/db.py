@@ -1,4 +1,3 @@
-from enum import unique
 from flask import jsonify
 from flask_pymongo import pymongo
 from pymongo.errors import DuplicateKeyError, OperationFailure

@@ -1,7 +1,13 @@
+from threading import Thread
 from flask import Flask, request
 from flask_cors import CORS
-import jwt
+from flask_script import Manager, Server
 from db import *
+from metric import *
+import sys
+import time
+import requests
+import jwt
 
 SECRET = "CHANGE_SECRET"
 def verify_jwt(token):
@@ -154,5 +160,48 @@ def getAuthenticatedUser():
     })
 """
 
+def registerAtLoadBalancer(myIp, myPort, myName):
+    regmsg = {"ip": myIp, "port": myPort, "name": myName, "type": "API"}
+    endpoint = loadbalancerAddressAndPort + "/register"
+    try:
+        requests.post(url= endpoint, json= regmsg)
+        print("Registered to load balancer")
+        return True
+    except:
+        return False
+
+
+def heartbeatTask(myIp, myName, isRegistered):
+    """
+    Send server metric to loadbalancer at even interval
+    """
+    while True:
+        if isRegistered:
+            try:
+                endpoint = loadbalancerAddressAndPort + "/usage"
+                metric = calculateMetric(myIp, myName)
+                requests.post(url= endpoint, json= metric)
+                
+            except Exception as e:
+                print("exception?")
+        else:
+            time.sleep(1)
+        time.sleep(10)
+
+
+ # TODO hardcoded for now, whatever ip/port of loadbalancer
+loadbalancerAddressAndPort = "http://192.168.1.204:7777"
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9090, debug=True)
+    try:
+        myIp = sys.argv[1]
+        myPort = sys.argv[2]
+        myName = sys.argv[3]
+    except:
+        print("Usage guide: <arg1: ip> <arg2: port> <arg3: server name>")
+        sys.exit()
+
+    isRegistered = registerAtLoadBalancer(myIp, myPort, myName)
+    Thread(target=heartbeatTask, args=(myIp, myName, isRegistered), daemon=True).start()
+    app.run(host=myIp, port=myPort, debug=False)
+
