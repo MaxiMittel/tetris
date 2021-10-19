@@ -88,7 +88,6 @@ def allocate():
         return jsonify({"status": "error"})
 
 
-
 @app.route("/gameserver/newsession", methods=['POST'])
 def createGameSession():
     """
@@ -103,10 +102,15 @@ def createGameSession():
         return jsonify({"status": "error", "error": msg, "ip": "", "id": ""})
 
 
-
 @app.route("/gameserver/deletesession", methods=['DELETE'])
 def deleteGameSession():
-    pass
+    content = request.json
+    if content:
+        serverId = content["id"]
+        return dbRemoveGameSession(serverId)
+    else:
+        msg = "Incorrect data"
+        return jsonify({"status": "error", "error": msg, "ip": "", "id": ""})
 
 
 @app.route("/migrate", methods=['POST'])

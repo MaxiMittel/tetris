@@ -1,6 +1,6 @@
 from flask import jsonify
 from flask_pymongo import pymongo
-from pymongo.errors import DuplicateKeyError, OperationFailure
+from pymongo.errors import OperationFailure
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 

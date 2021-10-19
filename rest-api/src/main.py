@@ -61,6 +61,16 @@ def getUser():
         return jsonify({"status": "error", "error": msg, "username": "", "stats": ""})
 
 
+@app.route("/user/getbyid", methods=['GET'])
+def getUserById():
+    """
+    Get user informations by their id.
+    usage example: /user/getbyid?id=616f1a742c1a8f9f3f6588a6
+    """
+    id = request.args.get("id")
+    return dbFindUserById(id)
+
+
 @app.route("/account/update", methods=['POST'])
 def update():
     """ 
@@ -104,15 +114,6 @@ def search():
     else:
         msg = "No arguements passed"
         return jsonify({"status": "error", "error": msg})
-
-
-@app.route("/user/get", methods=['GET'])
-def getUserById():
-    """
-    Get user informations by their id.
-    """
-    id = request.args.get("id")
-    return dbFindUserById(str(id))
 
 
 @app.route("/account/isAuthenticated")

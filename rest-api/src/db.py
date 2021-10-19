@@ -21,7 +21,7 @@ db = mongo.get_database('tetris_db')
 userData = pymongo.collection.Collection(db, 'user_data')
 
 
-def dbSignup(newAccount, username, token):
+def dbSignup(newAccount, username):
     try:
         userData.create_index([("username", pymongo.DESCENDING) ], unique=True)
 
@@ -33,7 +33,7 @@ def dbSignup(newAccount, username, token):
         result  = userData.insert_one(newAccount)
         
         if result.acknowledged:
-            token = jwt.encode({"id": result.inserted_id}, SECRET , algorithm="HS256")
+            token = jwt.encode({"id": str(result.inserted_id)}, SECRET , algorithm="HS256")
             return jsonify({"status": "success", "error": "", "auth": token, "username": username})
         else:
             msg = "Operation not acknowledged"
@@ -52,17 +52,19 @@ def dbSignup(newAccount, username, token):
 
 
 
-def dbSignin(userID, enteredPassword):
+def dbSignin(username, enteredPassword):
     try:
         projection = { "_id": 1, "username": 1, "password": 1}
-        result  = userData.find_one( {"_id": ObjectId(userID) }, projection)
-        
-        if result ["password"] != enteredPassword:
-            return jsonify({"status": "error", "error": "Wrong password", "username": ""})
+        result = userData.find_one({"username": username}, projection)
+        if(result):
+            if result["password"] != enteredPassword:
+                return jsonify({"status": "error", "error": "Wrong password", "username": ""})
 
+            else:
+                token = jwt.encode({"id": str(result["_id"])}, SECRET , algorithm="HS256")
+                return jsonify({"status": "success", "error": "", "auth": token, "username": result["username"]})
         else:
-            token = jwt.encode({"id": result["_id"]}, SECRET , algorithm="HS256")
-            return jsonify({"status": "success", "error": "", "auth": token, "username": result["username"]})
+           return jsonify({"status": "error", "error": "User not found", "username": ""}) 
 
     except OperationFailure:
         msg = "Operation failure"
@@ -95,11 +97,16 @@ def dbGetUser(userID):
 def dbUpdateUser(userID, newUsername):
     if(userID != False):
         try:
-            filter = {"_id": userID["id"]}
+            filter = {"_id": ObjectId(userID["id"])}
             update = {"$set": {"username": newUsername} }
-            userData.update_one(filter, update)
-            newAuth = jwt.encode({"id": userID["id"]}, SECRET , algorithm="HS256")
-            return jsonify({"status": "success", "error": "", "username": newUsername, "auth": newAuth})
+            result = userData.update_one(filter, update)
+
+            if (result.modified_count > 0):
+                newAuth = jwt.encode({"id": userID["id"]}, SECRET , algorithm="HS256")
+                return jsonify({"status": "success", "error": "", "username": newUsername, "auth": newAuth})
+            else:
+                msg = "Failed to post update"
+                return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
 
         except OperationFailure:
             msg = "Operation failure"
@@ -115,11 +122,16 @@ def dbUpdateUser(userID, newUsername):
 def dbPostStat(userID, stat):
     if(userID != False):
         try:
-            filter = {"_id": userID["id"]}
+            filter = {"_id": ObjectId(userID["id"])}
             potentialHighscore = stat["score"]
             update = {"$push": {"stats": stat}, "$max": {"highscore": potentialHighscore}}
-            userData.update_one(filter, update)
-            return jsonify({"status": "success", "error": ""})
+            result = userData.update_one(filter, update)
+
+            if (result.modified_count > 0):
+                return jsonify({"status": "success", "error": ""})
+            else:
+                msg = "Failed to post update"
+                return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
 
         except OperationFailure:
             return jsonify({"status": "error", "error": "Operation Failure"})
@@ -132,12 +144,15 @@ def dbPostStat(userID, stat):
         
 
 def dbFindUsers(search):
+    """
+     # TODO returns in wierd format?
+    """
     if(search):
         try:
             projection = {"_id": 1, "username": 1, "highscore": 1}
-            cursor = userData.find({ "username": search}, projection)
+            cursor = userData.find({ "username": { "$regex": search } }, projection)
             list_cur = list(cursor)
-            json_data = dumps(list_cur) # TODO wierd format?
+            json_data = dumps(list_cur, indent = 2)
             return jsonify({"users": json_data})
 
         except OperationFailure:
@@ -150,12 +165,14 @@ def dbFindUsers(search):
 
 
         
-def dbFindUserById(id):
+def dbFindUserById(userID):
     try:
         projection = {"_id": 1, "username": 1, "stats": 1}
-        result = userData.find_one({"_id": ObjectId(id) }, projection)
-        return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"]})
-
+        result = userData.find_one({"_id": ObjectId(userID) }, projection)
+        if result:
+            return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"]})
+        else:
+            return jsonify({"id": "", "username": "", "stats": ""}) 
     except OperationFailure:
         return jsonify({"id": "", "username": "", "stats": ""})
 
