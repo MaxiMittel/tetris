@@ -3,6 +3,16 @@ from flask_pymongo import pymongo
 from pymongo.errors import DuplicateKeyError, OperationFailure
 from bson.json_util import dumps
 from bson.objectid import ObjectId
+import jwt
+
+SECRET = "CHANGE_SECRET"
+def verify_jwt(token):
+    try:
+        return jwt.decode(token, SECRET, algorithms=['HS256'])
+    except jwt.exceptions.InvalidSignatureError:
+        return False
+    except jwt.exceptions.DecodeError:
+        return False
 
 # Connection to monogodb atlas
 dbUri = "mongodb+srv://dbUser:dbUserPassword@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority"
@@ -16,14 +26,14 @@ def dbSignup(newAccount, username, token):
         userData.create_index([("username", pymongo.DESCENDING) ], unique=True)
 
     except Exception as e:
-        print(e)
         msg = "Could not create unique value"
         return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
 
     try:
         result  = userData.insert_one(newAccount)
-
-        if result .acknowledged:
+        
+        if result.acknowledged:
+            token = jwt.encode({"id": result.inserted_id}, SECRET , algorithm="HS256")
             return jsonify({"status": "success", "error": "", "auth": token, "username": username})
         else:
             msg = "Operation not acknowledged"
@@ -44,14 +54,15 @@ def dbSignup(newAccount, username, token):
 
 def dbSignin(userID, enteredPassword):
     try:
-        projection = { "_id": 0, "username": 1, "password": 1, "auth": 1}
-        result  = userData.find_one( {"username": userID }, projection)
+        projection = { "_id": 1, "username": 1, "password": 1}
+        result  = userData.find_one( {"_id": ObjectId(userID) }, projection)
         
         if result ["password"] != enteredPassword:
-            return jsonify({"status": "error", "error": "Wrong password", "auth": "", "username": ""})
+            return jsonify({"status": "error", "error": "Wrong password", "username": ""})
 
         else:
-            return jsonify({"status": "success", "error": "", "auth": result["auth"], "username": result["username"]})
+            token = jwt.encode({"id": result["_id"]}, SECRET , algorithm="HS256")
+            return jsonify({"status": "success", "error": "", "auth": token, "username": result["username"]})
 
     except OperationFailure:
         msg = "Operation failure"
@@ -65,8 +76,8 @@ def dbSignin(userID, enteredPassword):
 def dbGetUser(userID):
     try:
         if(userID != False):
-            projection = { "_id": 0, "username": 1, "stats": 1}
-            result  = userData.find_one( {"username": userID["id"]}, projection)
+            projection = {"_id": 1, "username": 1, "stats": 1}
+            result  = userData.find_one( {"_id": ObjectId(userID["id"])}, projection)
             return jsonify({"status": "success", "error": "", "username": result["username"], "stats": result["stats"] })
         else:
             msg = "JWT encode error"
@@ -81,12 +92,13 @@ def dbGetUser(userID):
 
 
 
-def dbUpdateUser(userID, newUsername, newAuth):
+def dbUpdateUser(userID, newUsername):
     if(userID != False):
         try:
-            filter = {"username": userID["id"]}
-            update = {"$set": {"username": newUsername, "auth": newAuth} }
+            filter = {"_id": userID["id"]}
+            update = {"$set": {"username": newUsername} }
             userData.update_one(filter, update)
+            newAuth = jwt.encode({"id": userID["id"]}, SECRET , algorithm="HS256")
             return jsonify({"status": "success", "error": "", "username": newUsername, "auth": newAuth})
 
         except OperationFailure:
@@ -103,7 +115,7 @@ def dbUpdateUser(userID, newUsername, newAuth):
 def dbPostStat(userID, stat):
     if(userID != False):
         try:
-            filter = {"username": userID["id"]}
+            filter = {"_id": userID["id"]}
             potentialHighscore = stat["score"]
             update = {"$push": {"stats": stat}, "$max": {"highscore": potentialHighscore}}
             userData.update_one(filter, update)
@@ -119,13 +131,13 @@ def dbPostStat(userID, stat):
         
         
 
-def dbFindUsers(userList):
-    if(userList):
+def dbFindUsers(search):
+    if(search):
         try:
             projection = {"_id": 1, "username": 1, "highscore": 1}
-            cursor = userData.find({ "username": { "$in": userList } }, projection )
+            cursor = userData.find({ "username": search}, projection)
             list_cur = list(cursor)
-            json_data = dumps(list_cur)
+            json_data = dumps(list_cur) # TODO wierd format?
             return jsonify({"users": json_data})
 
         except OperationFailure:

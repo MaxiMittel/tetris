@@ -6,15 +6,6 @@ from metric import *
 import sys
 import jwt
 
-SECRET = "CHANGE_SECRET"
-def verify_jwt(token):
-    try:
-        return jwt.decode(token, SECRET, algorithms=['HS256'])
-    except jwt.exceptions.InvalidSignatureError:
-        return False
-    except jwt.exceptions.DecodeError:
-        return False
-
 app = Flask(__name__)
 CORS(app)
 
@@ -34,9 +25,8 @@ def signup():
         username = content["username"]
         password = content["password"]
         mail = content["mail"]
-        token = jwt.encode({"id": username}, SECRET , algorithm="HS256")
-        newAccount = {"username": username, "password": password, "mail": mail, "auth": token, "highscore": 0, "stats": [ ] }
-        return dbSignup(newAccount, username, token)
+        newAccount = {"username": username, "password": password, "mail": mail, "highscore": 0, "stats": [] }
+        return dbSignup(newAccount, username)
     else:
         msg = "No arguements passed"
         return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
@@ -49,11 +39,11 @@ def signin():
     """
     content = request.json
     if (content):
-        userID = content["username"]
+        username = content["username"]
         enteredPassword = content["password"]
-        return dbSignin(userID, enteredPassword)
+        return dbSignin(username, enteredPassword)
     else:
-        msg = "No arguements passed"
+        msg = "No arguements(json) passed"
         return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
 
 
@@ -78,11 +68,9 @@ def update():
     """
     content = request.json
     if (content):
-        auth = content["auth"]
-        userID = verify_jwt(auth)
+        userID = verify_jwt(content["auth"])
         newUsername = content["username"]
-        newAuth = jwt.encode({"id": newUsername}, SECRET , algorithm="HS256")
-        return dbUpdateUser(userID, newUsername, newAuth)
+        return dbUpdateUser(userID, newUsername)
     else:
         msg = "No arguements passed"
         return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
@@ -111,24 +99,22 @@ def search():
     """
     content = request.json
     if (content):
-        userList = content["query"]
-        return dbFindUsers(userList)
+        search = content["query"]
+        return dbFindUsers(search)
     else:
         msg = "No arguements passed"
         return jsonify({"status": "error", "error": msg})
 
 
-@app.route("/user/getbyid", methods=['GET'])
+@app.route("/user/get", methods=['GET'])
 def getUserById():
     """
     Get user informations by their id.
     """
-    content = request.json
-    id = content["id"]
+    id = request.args.get("id")
     return dbFindUserById(str(id))
 
 
-"""
 @app.route("/account/isAuthenticated")
 def getAccount():
     token = request.headers.get("Authorization")
@@ -139,23 +125,6 @@ def getAccount():
         return jsonify({"error": "Invalid token"}), 401
     return jsonify({"message": "Success"})
 
-
-@app.route("/account/getAuthenticatedUser")
-def getAuthenticatedUser():
-    return jsonify({
-        "username": "John452",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
-        "games": [
-            {"score": 1000, "bpm": 4.56, "date": 1631647493076},
-            {"score": 1005, "bpm": 4.89, "date": 1631647493076},
-            {"score": 980, "bpm": 4.6, "date": 1631647493076},
-            {"score": 1100, "bpm": 3.2, "date": 1631647493076},
-            {"score": 1090, "bpm": 4.23, "date": 1631647493076},
-            {"score": 1150, "bpm": 4.54, "date": 1631647493076},
-            {"score": 1200, "bpm": 5.1, "date": 1631647493076}
-        ]
-    })
-"""
 
 if __name__ == '__main__':
     try:

@@ -2,6 +2,8 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from game_state import GameState
+from metric import *
+import sys
 
 app = Flask(__name__)
 CORS(app)
@@ -136,4 +138,13 @@ def sendAll(action, room, message):
         emit(action, message, room=client)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    try:
+        myIp = sys.argv[1]
+        myPort = sys.argv[2]
+        myName = sys.argv[3]
+    except:
+        print("Usage guide: <arg1: ip> <arg2: port> <arg3: server name>")
+        sys.exit()
+
+    registerAtLoadBalancer(myIp, myPort, myName, "GS")
+    socketio.run(app, debug=False)

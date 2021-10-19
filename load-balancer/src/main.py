@@ -1,7 +1,9 @@
+import json
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
 from serverObject import serverObject as so
+from db import *
 
 app = Flask(__name__)
 CORS(app)
@@ -74,9 +76,6 @@ def allocate():
     """ 
     Request the ip of a gameserver, load balancing picks service 
     with least load/most free resources.
-
-    Returns: 
-    The server with the best/lowest metric value in json-format
     """
     gameServer = __pickLeastLoadedGameServer()
     if gameServer:
@@ -89,14 +88,50 @@ def allocate():
         return jsonify({"status": "error"})
 
 
+
+@app.route("/gameserver/newsession", methods=['POST'])
+def createGameSession():
+    """
+    Creates a new game session on reqeusted game server
+    """
+    content = request.json
+    if content:
+        serverIp = content["ip"]
+        return dbAddGameSession(serverIp)
+    else:
+        msg = "Incorrect data"
+        return jsonify({"status": "error", "error": msg, "ip": "", "id": ""})
+
+
+
+@app.route("/gameserver/deletesession", methods=['DELETE'])
+def deleteGameSession():
+    pass
+
+
 @app.route("/migrate", methods=['POST'])
 def migrateSingleGameSession():
     """ 
-    Transfer a gamesession from a gameserver to another
-    TODO all players of the session would have to reconnect to a new server
-    TODO Would have to transfer a game state
+    migrates a gamesession to a new game server
     """
-    pass
+    content = request.json
+    gameSessionId = content["id"]
+    result = dbCheckForGameSession(gameSessionId)
+
+    if result != False:
+        return result
+
+    else:
+        server = __pickLeastLoadedGameServer
+
+        if(server):
+            serverIp = server.getIp()
+            dbUpdateGameSessionHost(gameSessionId, serverIp)
+
+        else:
+            msg = "No active Game server available"
+            return jsonify({"status": "error", "error": msg, "ip": ""})
+        
 
 
 @app.route("/api/<path:forwardpath>", methods=['GET'])
@@ -110,7 +145,7 @@ def forwardGetRequest(forwardpath):
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
         try:
-            response = requests.get(url= endpoint, json= content)
+            response = requests.get(url= endpoint, json= content, params= request.args)
             return jsonify(response.json())
             
         except Exception as e:
@@ -140,7 +175,7 @@ def forwardPostRequest(forwardpath):
         return jsonify({"status": "error"})
 
 
-########## Private methods below ##################
+########## "Private" methods below ##################
 
 def __registerCheck(content):
     """ Checks if register request is valid """
