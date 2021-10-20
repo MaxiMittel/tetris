@@ -12,7 +12,6 @@ __apiServerDict = {}
 __lbServerDict = {}
 
 
-
 @app.route("/directory-service")
 def index():
     return "Success! Directory Service is running."
@@ -46,6 +45,7 @@ def registerServer():
     else:
         return jsonify({"status": "error"})
 
+
 @app.route("/directory-service/unregister/<id>", methods=['DELETE'])
 def unregisterServer(id):
     """
@@ -65,18 +65,41 @@ def unregisterServer(id):
 
     return jsonify({"status": "error"})
 
-# DONE
-@app.route("/directory-service/getServer", methods=['GET'])
-def get_server():
+
+@app.route("/directory-service/getGameServer", methods=['GET'])
+def get_gameserver():
     """
     Request all currently registered game servers.
 
     Returns:
     A list with all registered services
     """
-    print(__gameServerDict)
-    servers = list(__gameServerDict.values())
-    return jsonify(server=servers)
+    gameservers = list(__gameServerDict.values())
+    return jsonify(gameserver=gameservers)
+
+
+@app.route("/directory-service/getApiServer", methods=['GET'])
+def get_apiserver():
+    """
+    Request all currently registered api servers.
+
+    Returns:
+    A list with all registered services
+    """
+    apiservers = list(__apiServerDict.values())
+    return jsonify(apiserver=apiservers)
+
+
+@app.route("/directory-service/getlbServer", methods=['GET'])
+def get_lbserver():
+    """
+    Request all currently registered load balancer servers.
+
+    Returns:
+    A list with all registered services
+    """
+    lbservers = list(__lbServerDict.values())
+    return jsonify(lbserver=lbservers)
 
 
 ### Private methods below ###
