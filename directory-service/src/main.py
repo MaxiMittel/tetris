@@ -34,7 +34,7 @@ def registerServer():
             lbso = so.makeServerObject(content["ip"], content["port"], content["name"])
             __lbServerDict[content["name"]] = lbso
 
-        elif content["type"] == "LB":
+        elif content["type"] == "API":
             apiso = so.makeServerObject(content["ip"], content["port"], content["name"])
             __apiServerDict[content["name"]] = apiso
 
