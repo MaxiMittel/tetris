@@ -1,4 +1,4 @@
-# Load Balancer
+# Directory Service
 
 ## Config
 
@@ -15,7 +15,7 @@ port="7777"
 
 ``POST /directory-service/register``
 
-Register a GameServer server to the directory service.
+Register a game server to the directory service.
 
 ```json
 >> {
