@@ -82,9 +82,9 @@ Returns the account informations of the logged in user.
 
 ---
 
-`POST /account/update`
+`POST /account/update`  //TODO FIX
 
-Updates the current user.
+Updates the current user. 
 
 ```json
 >> {
@@ -104,9 +104,9 @@ Updates the current user.
 
 ---
 
-`POST /account/postgamescore`
+`POST /account/postgamescore` //TODO FIX
 
-Post the result of one game
+Post the result of one game 
 
 ```json
 >> {
@@ -130,7 +130,7 @@ Search for other users.
 
 ```json
 >> {
-    "query": ["username1", "username2", "username3"]     //Search query
+    "query": "username" 
 }
 ```
 
@@ -153,15 +153,9 @@ Search for other users.
 
 ---
 
-`GET /user/getbyid`
+`GET /user/<id>`
 
 Get user informations by their id.
-
-```json
->> {
-    "id": "1231ahtr435cvb345"      //User id
-}
-```
 
 ```json
 << {
