@@ -85,7 +85,6 @@ class Tetris:
         if players == 1:
             self.figure[0] = Figure(3, 0)
         elif players == 2:
-            # Then we need an array of players that can be looped through containing the respective figure for each player
             # Starting positions: P1 (3,0), P2 (width-3, 0)
             self.figure[0] = Figure(3, 0)
             self.figure[1] = Figure(self.width - 4, 0)
