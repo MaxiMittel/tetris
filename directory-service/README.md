@@ -36,13 +36,8 @@ Register a game server to the directory service.
 
 Unregister a game server from the directory service.
 
-```json
->> {
-    "ip": "0.0.0.0",    //IP-Adress of the server
-    "port": "7777",     //Port of the server
-    "name": "EU-1",     //Name of the server
-}
-```
+http://serverip/directory-service/unregister/Eu-1
+
 ```json
 << {
     "status": "success/error" 
