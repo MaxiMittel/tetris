@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class serverObject(object):
 
     def __init__(self,ip,port,name,metric=100):
@@ -5,11 +7,10 @@ class serverObject(object):
         self.__port = port
         self.__name = name
         self.__metric = metric
-
+        self.__lastContact = datetime.now()
 
     def makeServerObject(ip,port,name):
         return serverObject(ip,port,name)
-
 
     def getIp(self):
         return self.__ip
@@ -22,9 +23,12 @@ class serverObject(object):
 
     def getMetric(self):
         return self.__metric
-
-
     def setMetric(self, metric):
         self.__metric = metric
+
+    def getLastContact(self):
+        return self.__lastContact
+    def setLastContact(self, lastContact):
+        self.__lastContact = lastContact
 
 

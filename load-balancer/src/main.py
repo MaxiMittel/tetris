@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
@@ -29,7 +30,7 @@ def registerServer():
     Register a GameServer or API server to the load balancer.
     """
     content = request.json 
-    if __registerCheck(content):
+    if registerCheck(content):
 
         if content["type"] == "GS":
             gso = so.makeServerObject(content["ip"],content["port"],content["name"])
@@ -48,12 +49,20 @@ def registerServer():
         return jsonify({"status": "error"})
 
 
-@app.route("/unregister", methods=['DELETE'])
-def unregisterServer():
+@app.route("/unregister/<id>", methods=['DELETE'])
+def unregisterServer(id):
     """ 
     Unregister a GameServer or API server from the load balancer.
     """
-    pass
+    if id in __gameServerDict.keys():
+        __gameServerDict.pop(id)
+        return jsonify({"status": "success"})
+
+    elif id in __apiServerDict.keys():
+        __apiServerDict.pop(id)
+        return jsonify({"status": "success"})
+
+    return jsonify({"status": "error"})
 
 
 @app.route("/usage", methods=['POST'])
@@ -67,11 +76,13 @@ def heartbeat():
     gameServer = __gameServerDict.get(serverName)
     if gameServer:
         gameServer.setMetric(content["usage"])
+        gameServer.setLastContact(datetime.now())
         return jsonify({"status": "success"})
 
     apiServer = __apiServerDict.get(serverName)
     if apiServer:
         apiServer.setMetric(content["usage"])
+        apiServer.setLastContact(datetime.now())
         return jsonify({"status": "success"})
     
     return jsonify({"status": "error"})
@@ -83,7 +94,8 @@ def allocate():
     Request the ip of a gameserver, load balancing picks service 
     with least load/most free resources.
     """
-    gameServer = __pickLeastLoadedGameServer()
+    dropNonresponsiveServers()
+    gameServer = pickLeastLoadedGameServer()
     if gameServer:
         return jsonify({
             "ip": gameServer.getIp(),
@@ -131,7 +143,7 @@ def migrateSingleGameSession():
     if result != False:
         return result
     else:
-        server = __pickLeastLoadedGameServer
+        server = pickLeastLoadedGameServer()
 
         if(server):
             serverIp = server.getIp()
@@ -148,7 +160,7 @@ def forwardGetRequest(forwardpath):
     Forwards ``GET``request to an API server and returns the response to the client.
     """
     content = request.json
-    api = __pickLeastLoadedApiServer()
+    api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
@@ -168,7 +180,7 @@ def forwardPostRequest(forwardpath):
     Forwards ``POST``request to an API server and returns the response to the client.
     """
     content = request.json
-    api = __pickLeastLoadedApiServer()
+    api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
@@ -183,9 +195,12 @@ def forwardPostRequest(forwardpath):
         return jsonify({"status": "error"})
 
 
-########## "Private" methods below ##################
 
-def __registerCheck(content):
+
+
+########## Private methods below ##################
+
+def registerCheck(content):
     """ Checks if register request is valid """
     if content is not None:
         for key in __gameServerDict:
@@ -198,8 +213,19 @@ def __registerCheck(content):
     else:
         return False
 
+def dropNonresponsiveServers():
+    """ Go through all servers and drop non"""
+    now = time.now
+    for server in __gameServerDict.values:
+        if (now - server.getLastContact()) > config.TIMEOUT:
+            __gameServerDict.pop(server.getName())
 
-def __pickLeastLoadedGameServer():
+    for server in __apiServerDict.values:
+        if (now - server.getLastContact()) > config.TIMEOUT:
+            __apiServerDict.pop(server.getName())
+
+
+def pickLeastLoadedGameServer():
     """ Returns the least loaded server based on metric values """
     current = None
     lowest = None
@@ -215,7 +241,7 @@ def __pickLeastLoadedGameServer():
     return __gameServerDict.get(server)
 
 
-def __pickLeastLoadedApiServer():
+def pickLeastLoadedApiServer():
     """ Returns the least loaded server based on metric values """
     current = None
     lowest = None
@@ -252,22 +278,35 @@ def updateServersTask(dirIP, dirPort):
     APIEndpoint ="http://" + dirIP + ":" + dirPort + "/directory-service/getapi"
     while True:
         try:    
-            #Fetch game servers
+            """ Fetch game servers """
             GSResponse = requests.get(url= GSEndpoint)
             gameServerList = GSResponse.json()
-            for server in gameServerList["server"]:
-                pass # TODO
 
-            #Fetch api servers
+            for server in gameServerList["server"]:
+                if server not in __gameServerDict.keys():
+                    """ Add any servers that is not in this server dictionary """
+                    gso = so.makeServerObject(server["ip"],server["port"],server["name"])
+                    __gameServerDict[server["name"]] = gso    
+                else:
+                    """ Update existing server"""
+                    pass
+
+            """ Fetch api servers """
             APISResponse = requests.get(url= APIEndpoint)
             apiServerList = APISResponse.json()
+
             for server in apiServerList["server"]:
-                pass # TODO
+                """ Add any servers that is not in this server dictionary """
+                if server not in __apiServerDict.keys():
+                    apio = so.makeServerObject(server["ip"],server["port"],server["name"])
+                    __apiServerDict[server["name"]] = apio
+                else:
+                    """ Update existing server"""
+                    pass
 
             time.sleep(config.PERIODIC_UPDATE) 
-
         except Exception as e:
-                time.sleep(config.PERIODIC_UPDATE)
+            time.sleep(config.PERIODIC_UPDATE)
             
 
 if __name__ == '__main__':
