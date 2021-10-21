@@ -63,6 +63,99 @@ Request the ip of a gameserver
 
 ***
 
+``GET /sessions/list``
+
+Get list of all gamesessions
+
+```json
+<< {
+    "status": "success/error",
+    "sessions": [{
+        "_id": "1334ssg45", //code
+        "ip": "0.0.0.0",    //IP-Adress of the hosting game server
+        "port": "7777",     //Port of the hosting game server
+        "name": "EU-2"      //Name of
+    }]
+    }
+```
+
+***
+
+``POST /sessions/allocate``
+
+Allocates for a new gamesession
+
+```json
+>> {
+    "name": ""      //name of
+}
+```
+
+```json
+<< {
+    "_id": "1334ssg45",   //code
+    "status": "success/error",
+    "error": "error/empty"
+}
+```
+
+***
+
+``GET /sessions/get/<id>``
+
+Get session by its uniqe id
+
+```json
+<< {
+    "status": "success/error",
+    "ip": "0.0.0.0",    //IP-Adress of the hosting game server
+    "port": "7777",     //Port of the hosting game server
+}
+```
+
+***
+
+``POST /sessions/delete``
+
+Delete 
+
+```json
+>> {
+    "_id": "",      //code
+    "ip": "",  
+    "port": ""   
+}
+```
+
+```json
+<< {
+    "status": "success/error",
+    "error": "error/empty"
+}
+```
+
+***
+
+``POST sessions/migrate``
+
+```json
+>> {
+    "_id": "",         //code
+    "name": ""   
+}
+```
+
+```json
+<< {
+    "status": "success/error",
+    "error": "error/empty",
+    "ip": "0.0.0.0",            //IP-Adress of the hosting game server
+    "port": "7777"              //Port of the hosting game server
+}
+```
+
+***
+
 ``GET /api/<path>``
 
 Forwards ``GET``request to an API server and returns the response to the client.

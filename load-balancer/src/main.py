@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import e
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
@@ -106,52 +107,89 @@ def allocate():
         return jsonify({"status": "error"})
 
 
-@app.route("/gameserver/newsession", methods=['POST'])
+
+
+####### GAME SESSIONS BELOW ##########
+
+@app.route("/sessions/list", methods=['GET'])
+def getGameSession():
+    """
+    Get list of all gamesessions
+    """
+    return dbGetGameSessions()
+
+
+@app.route("/sessions/allocate", methods=['POST'])
 def createGameSession():
     """
-    Creates a new game session on reqeusted game server
+    Allocates for a new gamesession
     """
     content = request.json
     if content:
-        serverIp = content["ip"]
-        return dbAddGameSession(serverIp)
+        name = content["name"]
+        server = pickLeastLoadedGameServer()
+        serverIp = server.getIp()
+        serverPort = server.getPort()
+        return dbAllocate(serverIp, serverPort, name)
     else:
-        msg = "Incorrect data"
-        return jsonify({"status": "error", "error": msg, "ip": "", "id": ""})
+        msg = "Incorrect input parameter"
+        return jsonify({"status": "error", "error": msg, "_id": ""})
 
 
-@app.route("/gameserver/deletesession", methods=['DELETE'])
+@app.route("/sessions/get/<id>", methods=['GET'])
+def getGameSession(id):
+    """
+    Get session by its uniqe id
+    """
+    return dbGetSingleGameSession(id)
+
+
+@app.route("/sessions/delete", methods=['POST'])
 def deleteGameSession():
-    content = request.json
-    if content:
-        serverId = content["id"]
-        return dbRemoveGameSession(serverId)
-    else:
-        msg = "Incorrect data"
-        return jsonify({"status": "error", "error": msg, "ip": "", "id": ""})
+    """
+    Deletes a game session
+    """
+    try:
+        content = request.json
+        sessionId = content["_id"]
+        serverIp = content["ip"]
+        serverPort = content["port"]
+        result = dbGetSingleGameSession(sessionId)
+
+        if (serverIp == result["ip"] and serverPort == result["port"]):
+            return dbRemoveGameSession(sessionId, serverIp, serverPort)
+        else:
+            return jsonify({"status": "success", "error": "Did not delete session"})
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
-@app.route("/migrate", methods=['POST'])
+@app.route("sessions/migrate", methods=['POST'])
 def migrateSingleGameSession():
     """ 
     migrates a gamesession to a new game server
     """
-    content = request.json
-    gameSessionId = content["id"]
-    result = dbCheckForGameSession(gameSessionId)
-
-    if result != False:
-        return result
-    else:
-        server = pickLeastLoadedGameServer()
-
-        if(server):
-            serverIp = server.getIp()
-            dbUpdateGameSessionHost(gameSessionId, serverIp)
-        else:
-            msg = "No active Game server available"
-            return jsonify({"status": "error", "error": msg, "ip": ""})
+    try:
+        content = request.json
+        sessionId = content["_id"]
+        name = content["name"]
+        result = dbGetSingleGameSession(sessionId)
         
+        if not result:
+            dropNonresponsiveServers()
+            server = pickLeastLoadedGameServer()
+            serverIp = server.getIp()
+            serverPort = server.getPort()
+            return dbAllocate(serverIp, serverPort, name)
+
+        else:
+            return result
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": e.__class__.__name__})
+
+
 
 
 @app.route("/api/<path:forwardpath>", methods=['GET'])
