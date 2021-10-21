@@ -55,7 +55,7 @@ def dbGetSingleGameSession(gameSessionId):
     try:
         result  = GSC.find_one( {"_id": ObjectId(gameSessionId) })
         if result:
-            return jsonify({"status": "success",  "ip": result["ip"], "port": result["port"]})
+            return jsonify({"status": "success", "ip": result["ip"], "port": result["port"]})
         else:
             return False
 

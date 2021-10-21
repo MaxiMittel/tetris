@@ -3,6 +3,7 @@ from math import e
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
+from werkzeug.wrappers import response
 from serverObject import serverObject as so
 from db import *
 import socket
@@ -109,10 +110,10 @@ def allocate():
 
 
 
-####### GAME SESSIONS BELOW ##########
+######## GAME SESSIONS BELOW ##########
 
 @app.route("/sessions/list", methods=['GET'])
-def getGameSession():
+def getGameSessions():
     """
     Get list of all gamesessions
     """
@@ -124,23 +125,23 @@ def createGameSession():
     """
     Allocates for a new gamesession
     """
-    content = request.json
-    if content:
+    try:
+        content = request.json
         name = content["name"]
         server = pickLeastLoadedGameServer()
         serverIp = server.getIp()
         serverPort = server.getPort()
         return dbAllocate(serverIp, serverPort, name)
-    else:
-        msg = "Incorrect input parameter"
-        return jsonify({"status": "error", "error": msg, "_id": ""})
+    except Exception as e:
+        return jsonify({"status": "error", "error": e.__class__.__name__, "_id": ""})
 
 
-@app.route("/sessions/get/<id>", methods=['GET'])
-def getGameSession(id):
+@app.route("/sessions/get", methods=['GET'])
+def getGameSession():
     """
     Get session by its uniqe id
     """
+    id = request.args.get("id")
     return dbGetSingleGameSession(id)
 
 
@@ -154,10 +155,11 @@ def deleteGameSession():
         sessionId = content["_id"]
         serverIp = content["ip"]
         serverPort = content["port"]
-        result = dbGetSingleGameSession(sessionId)
+        response = dbGetSingleGameSession(sessionId)
+        result = response.json
 
         if (serverIp == result["ip"] and serverPort == result["port"]):
-            return dbRemoveGameSession(sessionId, serverIp, serverPort)
+            return dbRemoveGameSession(sessionId)
         else:
             return jsonify({"status": "success", "error": "Did not delete session"})
 
@@ -165,7 +167,7 @@ def deleteGameSession():
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
-@app.route("sessions/migrate", methods=['POST'])
+@app.route("/sessions/migrate", methods=['POST'])
 def migrateSingleGameSession():
     """ 
     migrates a gamesession to a new game server
@@ -174,7 +176,8 @@ def migrateSingleGameSession():
         content = request.json
         sessionId = content["_id"]
         name = content["name"]
-        result = dbGetSingleGameSession(sessionId)
+        response = dbGetSingleGameSession(sessionId)
+        result = response.json
         
         if not result:
             dropNonresponsiveServers()
