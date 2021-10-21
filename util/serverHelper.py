@@ -57,4 +57,4 @@ def heartbeatTask(myIp, myName, lbPath, isRegistered):
                 print("exception")
         else:
             time.sleep(1)
-        time.sleep(10)
+        time.sleep(config.HEARTBEAT_FREQUENCY)

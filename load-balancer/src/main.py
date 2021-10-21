@@ -249,23 +249,25 @@ def updateServersTask(dirIP, dirPort):
     Periodically fetch registered servers from the directory service
     """
     GSEndpoint = "http://" + dirIP + ":" + dirPort + "/directory-service/getgs"
-    APIEndpoint = "http://" +dirIP + ":" + dirPort + "/directory-service/getapi"
+    APIEndpoint ="http://" + dirIP + ":" + dirPort + "/directory-service/getapi"
     while True:
         try:    
-
             #Fetch game servers
-            gameServers = requests.get(url= GSEndpoint)
-            #Update servers in __gameServerDict and add new servers?
+            GSResponse = requests.get(url= GSEndpoint)
+            gameServerList = GSResponse.json()
+            for server in gameServerList["server"]:
+                pass # TODO
 
             #Fetch api servers
-            apiServers = requests.get(url= APIEndpoint)
-            #Update servers in __gameServerDict and add new servers?
+            APISResponse = requests.get(url= APIEndpoint)
+            apiServerList = APISResponse.json()
+            for server in apiServerList["server"]:
+                pass # TODO
 
-
-            time.sleep(30) 
+            time.sleep(config.PERIODIC_UPDATE) 
 
         except Exception as e:
-                time.sleep(30)
+                time.sleep(config.PERIODIC_UPDATE)
             
 
 if __name__ == '__main__':
