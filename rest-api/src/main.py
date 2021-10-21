@@ -2,9 +2,10 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_script import Manager, Server
 from db import *
-from metric import *
+import socket
 import sys
-import jwt
+sys.path.append('../../')
+from util.serverHelper import *
 
 app = Flask(__name__)
 CORS(app)
@@ -129,13 +130,14 @@ def getAccount():
 
 if __name__ == '__main__':
     try:
-        myIp = sys.argv[1]
-        myPort = sys.argv[2]
-        myName = sys.argv[3]
+        myName = sys.argv[1]
     except:
-        print("Usage guide: <arg1: ip> <arg2: port> <arg3: server name>")
+        print("Usage guide: <arg1: server name>")
         sys.exit()
 
-    registerAtLoadBalancer(myIp, myPort, myName, "API")
-    app.run(host=myIp, port=myPort, debug=False)
+    myIp = socket.gethostbyname(socket.gethostname())
+    myPort = "9090"
+
+    registerService(myIp, myPort, myName, "API")
+    app.run(host="0.0.0.0", port=myPort, debug=False)
 

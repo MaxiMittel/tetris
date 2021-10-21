@@ -2,8 +2,11 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from game_state import GameState
-from metric import *
+import socket
+
 import sys
+sys.path.append('../../')
+from util.serverHelper import *
 
 app = Flask(__name__)
 CORS(app)
@@ -130,6 +133,7 @@ def chat_message(data):
 
     sendAll("onChatMessage", room, {"message": message})
 
+
 """
 Send a message to all clients in a room
 """
@@ -137,14 +141,16 @@ def sendAll(action, room, message):
     for client in game[room].get_clients():
         emit(action, message, room=client)
 
+
 if __name__ == '__main__':
     try:
-        myIp = sys.argv[1]
-        myPort = sys.argv[2]
-        myName = sys.argv[3]
+        myName = sys.argv[1]
     except:
-        print("Usage guide: <arg1: ip> <arg2: port> <arg3: server name>")
+        print("Usage guide: <arg1: server name>")
         sys.exit()
 
-    registerAtLoadBalancer(myIp, myPort, myName, "GS")
+    myIp = socket.gethostbyname(socket.gethostname())
+    myPort = "8080"
+
+    registerService(myIp, myPort, myName, "GS")
     socketio.run(app, debug=False)

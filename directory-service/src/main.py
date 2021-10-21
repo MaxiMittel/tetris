@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from serverObject import ServerObject as so
 from serverObject import serverObjectJSONEncoder as sOJE
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -10,7 +11,6 @@ app.json_encoder = sOJE
 __gameServerDict = {}
 __apiServerDict = {}
 __lbServerDict = {}
-
 
 
 @app.route("/directory-service")
@@ -65,17 +65,38 @@ def unregisterServer(id):
 
     return jsonify({"status": "error"})
 
-# DONE
-@app.route("/directory-service/getServer", methods=['GET'])
-def get_server():
+
+@app.route("/directory-service/getgs", methods=['GET'])
+def getGameServer():
     """
     Request all currently registered game servers.
 
     Returns:
     A list with all registered services
     """
-    print(__gameServerDict)
     servers = list(__gameServerDict.values())
+    return jsonify(server=servers)
+
+@app.route("/directory-service/getapi", methods=['GET'])
+def getApiServer():
+    """
+    Request all currently registered game servers.
+
+    Returns:
+    A list with all registered services
+    """
+    servers = list(__apiServerDict.values())
+    return jsonify(server=servers)
+
+@app.route("/directory-service/getlb", methods=['GET'])
+def getLoadBalancer():
+    """
+    Request all currently registered game servers.
+
+    Returns:
+    A list with all registered services
+    """
+    servers = list(__lbServerDict.values())
     return jsonify(server=servers)
 
 

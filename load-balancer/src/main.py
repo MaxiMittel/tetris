@@ -1,9 +1,15 @@
-import json
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
 from serverObject import serverObject as so
 from db import *
+import socket
+import time
+from threading import Thread
+import sys
+sys.path.append('../../')
+import util.config as config
+
 
 app = Flask(__name__)
 CORS(app)
@@ -124,14 +130,12 @@ def migrateSingleGameSession():
 
     if result != False:
         return result
-
     else:
         server = __pickLeastLoadedGameServer
 
         if(server):
             serverIp = server.getIp()
             dbUpdateGameSessionHost(gameSessionId, serverIp)
-
         else:
             msg = "No active Game server available"
             return jsonify({"status": "error", "error": msg, "ip": ""})
@@ -227,6 +231,49 @@ def __pickLeastLoadedApiServer():
     return __apiServerDict.get(server)
 
 
+def registerAtDirectoryService(myIp, myPort, myName):
+    try:
+        content = {"ip": myIp, "port": myPort, "name": myName , "type": "LB"}
+        endpoint = "http://" + config.DIR_IP + ":" + config.DIR_PORT + "/directory-service/register"
+        response = requests.post(url= endpoint, json= content)
+        resp = response.json()
+        return resp
+
+    except Exception as e:
+        print("1. Error of type " + e.__class__.__name__ + " occured.")
+        return False
+    
+
+def updateServersTask(dirIP, dirPort):
+    """
+    Periodically fetch registered servers from the directory service
+    """
+    GSEndpoint = "http://" + dirIP + ":" + dirPort + "/directory-service/getgs"
+    APIEndpoint = "http://" +dirIP + ":" + dirPort + "/directory-service/getapi"
+    while True:
+        try:    
+
+            #Fetch game servers
+            gameServers = requests.get(url= GSEndpoint)
+            #Update servers in __gameServerDict and add new servers?
+
+            #Fetch api servers
+            apiServers = requests.get(url= APIEndpoint)
+            #Update servers in __gameServerDict and add new servers?
+
+
+            time.sleep(30) 
+
+        except Exception as e:
+                time.sleep(30)
+            
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7777, debug=False)
+    myIp = socket.gethostbyname(socket.gethostname())
+    myPort = "7778"
+    myName = "loadbalancer_1"
+
+    registerAtDirectoryService(myIp, myPort, myName)
+    Thread(target=updateServersTask, args=(config.DIR_IP, config.DIR_PORT), daemon=True).start()
+    app.run(host='0.0.0.0', port=myPort, debug=False)
 
