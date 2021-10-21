@@ -18,7 +18,9 @@ export const SignIn: React.FC<Props> = (props: Props) => {
     signup(username, password)
       .then(response => {
         setLoginSuccessfull(true);
-        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("auth", response.data.auth);
+        localStorage.setItem("username", response.data.username);
+        localStorage.setItem("userId", response.data.userId);
         props.onAuthenticated();
       })
       .catch((err) => {

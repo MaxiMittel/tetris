@@ -4,45 +4,60 @@ import { ChatMessage, Colors, PlayerEntry } from "../types";
 import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 import { LobbyInfo } from "./LobbyInfo";
+import { useParams } from "react-router";
+import { deleteLobby, getLobby, migrateLobby } from "../api/lobby";
 
-const room = "asdasd132s";
-const username = "Maxi" + Math.floor(Math.random() * 100);
-const id = "1" + Math.floor(Math.random() * 100);
+const fieldSize = { x: 30, y: 20 };
 
-const fieldSize = { x: 10, y: 20 };
-
-interface Props {}
+interface Props {
+  username: string;
+  id: string;
+}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
-  let fielda = new Array<Colors[]>(fieldSize.y);
+  const { username, id } = props;
+  const { room } = useParams<any>();
 
-  for (var i = 0; i < fielda.length; i++) {
-    fielda[i] = new Array<Colors>(fieldSize.x).fill(Colors.EMPTY);
-  }
-
-  const [player, setPlayer] = useState<PlayerEntry>({
+  const initPlayer = {
     id: id,
     username: username,
     block: randomBlock(randInt(0, fieldSize.x - 3)),
     ready: false,
-  });
+  };
+
+  const [player, setPlayer] = useState<PlayerEntry>(initPlayer);
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
-  const [field, setField] = useState(fielda);
+  const [field, setField] = useState(
+    generateEmptyField(fieldSize.x, fieldSize.y)
+  );
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [playerReady, setPlayerReady] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [lobbyText, setLobbyText] = useState("Waiting for other players...");
+  const [socketAddress, setSocketAddress] =
+    useState<{ ip: string; port: number }>();
   const [socket, setSocket] = useState<any>(null);
 
   useEffect(() => {
-    const newSocket = io("ws://localhost:5000");
-    setSocket(newSocket);
+    //Get the lobbys assigned game-server
+    getLobby(room).then((response) => {
+      setSocketAddress({ ip: response.data.ip, port: response.data.port });
+    });
+  }, [room]);
+
+  useEffect(() => {
+    let newSocket: any;
+
+    if (socketAddress) {
+      newSocket = io(`ws://${socketAddress.ip}:${socketAddress.port}`);
+      setSocket(newSocket);
+    }
+
     return () => {
       newSocket.close();
-      return;
     };
-  }, [setSocket]);
+  }, [socketAddress]);
 
   /**
    * Join the room
@@ -51,7 +66,17 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     if (socket) {
       socket.emit("join", { room, username: username, id: id });
     }
-  }, [socket]);
+  }, [socket, username, id, room]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("connect", () => {
+        if (players.length !== 0) {
+          socket.emit("migrate", { room, field, players });
+        }
+      });
+    }
+  }, [socket, players, field, room]);
 
   /**
    * React to socket events
@@ -60,8 +85,20 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     if (!socket) return;
 
     socket.on("disconnect", () => {
-      console.log("disconnected");
-    })
+      // All players will send a migrate event when they disconnect with a random delay
+      setTimeout(() => {
+        if (socketAddress) {
+          deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
+            migrateLobby(room, "migrated-lobby").then((response) => {
+              setSocketAddress({
+                ip: response.data.ip,
+                port: response.data.port,
+              });
+            });
+          });
+        }
+      }, Math.random() * 3000);
+    });
 
     // New player joins
     socket.on("onJoin", (response: any) => {
@@ -103,7 +140,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       setGameOver(true);
       setGameRunning(false);
     });
-  }, [socket]);
+  }, [socket, room, socketAddress]);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);
@@ -161,9 +198,11 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
             </button>
           )}
           {gameOver && (
-            <a href="/" ><button className="btn btn-primary" onClick={onReady}>
-              Continue
-            </button></a>
+            <a href="/">
+              <button className="btn btn-primary" onClick={onReady}>
+                Continue
+              </button>
+            </a>
           )}
         </div>
       )}
@@ -174,4 +213,14 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 //min,max (inclusive)
 const randInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const generateEmptyField = (width: number, height: number) => {
+  let f = new Array<Colors[]>(fieldSize.y);
+
+  for (var i = 0; i < f.length; i++) {
+    f[i] = new Array<Colors>(fieldSize.x).fill(Colors.EMPTY);
+  }
+
+  return f;
 };

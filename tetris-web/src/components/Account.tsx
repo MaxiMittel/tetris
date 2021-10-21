@@ -10,7 +10,7 @@ export const Account: React.FC<Props> = (props: Props) => {
   const [hsData, setHsData] = React.useState<object | undefined>(undefined);
   const [bpmData, setBpmData] = React.useState<object | undefined>(undefined);
   const [username, setUsername] = React.useState<string>("");
-  const [bio, setBio] = React.useState<string>("");
+  const [highscore, setHighscore] = React.useState<number>(0);
 
   const { id } = useParams<any>();
 
@@ -21,7 +21,7 @@ export const Account: React.FC<Props> = (props: Props) => {
       .then((repsonse: any) => {
         const userInfo = repsonse.data;
         setUsername(userInfo.username);
-        setBio(userInfo.description);
+        setHighscore(userInfo.highscore);
 
         setHsData(
           generateDiagramData(
@@ -45,7 +45,7 @@ export const Account: React.FC<Props> = (props: Props) => {
         <div className="col-lg-3">
           <div className="card">
             <h2 className="card-title">{username}</h2>
-            <p>{bio}</p>
+            <p>Highscore: {highscore}</p>
           </div>
         </div>
         <div className="col-lg-9">

@@ -5,14 +5,14 @@ import { Lobby } from "../types";
 interface Props {}
 
 export const Lobbies: React.FC<Props> = (props: Props) => {
-  const [search, setSearch] = React.useState("");
   const [lobbyName, setLobbyName] = React.useState("");
   const [lobbies, setLobbies] = React.useState<Lobby[]>([]);
 
   useEffect(() => {
-    const lobbyData = getLobbies(search);
-    setLobbies(lobbyData);
-  }, [search]);
+    getLobbies().then((response) => {
+      setLobbies(response.data);
+    });
+  }, []);
 
   const onNewLobby = (e: any) => {
     e.preventDefault();
@@ -25,13 +25,6 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
         <div className="w-400 card">
           <div className="card-top">
             <h2 className="card-title">Join</h2>
-            <input
-              type="text"
-              className="form-control w-200"
-              placeholder="Search..."
-              value={search}
-              onChange={(e: any) => setSearch(e.target.value)}
-            />
           </div>
 
           <div className="lobby-scroll">
@@ -90,9 +83,10 @@ const LobbyItem: React.FC<LobbyItemProps> = (props: LobbyItemProps) => {
     <div className="lobby-item">
       <div className="lobby-item-text">
         <h2 className="lobby-item-heading">{props.lobbyName}</h2>
-        <p className="lobby-item-players">{props.players}/8 Players</p>
       </div>
-      <button className="btn btn-primary">Join</button>
+      <a href={`/lobby/${props.code}`}>
+        <button className="btn btn-primary">Join</button>
+      </a>
     </div>
   );
 };

@@ -1,14 +1,13 @@
 import axios from "axios";
-
-const BASE_URL = "http://10.0.1.3:9090/user";
+import { ENDPOINT } from "./endpoint";
 
 export const search = (query: string) => {
-    return axios.get(`${BASE_URL}/search`,{
+    return axios.get(`${ENDPOINT}/api/search`,{
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${localStorage.getItem("auth")}`,
       },
       params: {
-          q: query
+          query
         }
     });
   }

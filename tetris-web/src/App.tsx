@@ -11,6 +11,7 @@ import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
 import { TetrisSocket } from "./components/TetrisSocket";
 import { Search } from "./components/Search";
+import { requestEndpoint } from "./api/endpoint";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -22,27 +23,35 @@ function App() {
   const [isAuth, setAuth] = useState(true);
 
   useEffect(() => {
-    isAuthenticated()
-      .then((response) => setAuth(response.data.message === "Success"))
-      .catch(() => setAuth(false));
+    requestEndpoint().then(() => {
+      isAuthenticated()
+        .then((response) => setAuth(response.data.message === "Success"))
+        .catch(() => setAuth(false));
+    });
   }, []);
 
   return (
     <div className="App">
-      <Navbar authenticated={isAuth} buttonText={isAuth? "Account" : "Sign in"}>
+      <Navbar
+        authenticated={isAuth}
+        buttonText={isAuth ? "Account" : "Sign in"}
+      >
         <BrowserRouter>
           <Switch>
             <Route path="/signin">
-              <SignIn onAuthenticated={() => setAuth(true)}/>
+              <SignIn onAuthenticated={() => setAuth(true)} />
             </Route>
             <Route path="/signup">
-              <SignUp onAuthenticated={() => setAuth(true)}/>
+              <SignUp onAuthenticated={() => setAuth(true)} />
             </Route>
-            <Route path="/tetris" component={TetrisSocket} />
-            <Authenticated authenticated={isAuth} onAuthenticated={() => setAuth(true)}>
+            <Authenticated
+              authenticated={isAuth}
+              onAuthenticated={() => setAuth(true)}
+            >
               <Route path="/account" component={Account} />
               <Route path="/user/:id" component={Account} />
-              <Route path="/" component={Lobbies} exact/>
+              <Route path="/lobby/:room" component={TetrisSocket} />
+              <Route path="/" component={Lobbies} exact />
               <Route path="/search" component={Search} />
             </Authenticated>
           </Switch>

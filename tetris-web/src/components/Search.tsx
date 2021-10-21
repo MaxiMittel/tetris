@@ -17,7 +17,7 @@ export const Search: React.FC<Props> = (props: Props) => {
     if (query.length > 0) {
       search(query)
         .then((response) => {
-          setResults(response.data);
+          setResults(response.data.users);
         })
         .catch(() => {
           setResults([]);

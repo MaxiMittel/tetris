@@ -1,33 +1,32 @@
 import axios from "axios";
-
-const BASE_URL = "http://10.0.1.3:9090/account";
+import { ENDPOINT } from "./endpoint";
 
 export const signup = (username: string, password: string) => {
-  return axios.post(`${BASE_URL}/signup`, {
+  return axios.post(`${ENDPOINT}/api/account/signup`, {
     username,
     password,
   });
 };
 
 export const signin = (username: string, password: string) => {
-  axios.post(`${BASE_URL}/signin`, {
+  axios.post(`${ENDPOINT}/api/account/signin`, {
     username,
     password,
   });
 };
 
 export const isAuthenticated = () => {
-  return axios.get(`${BASE_URL}/isAuthenticated`,{
+  return axios.get(`${ENDPOINT}/api/account/isAuthenticated`, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${localStorage.getItem("auth")}`,
     },
   });
-}
+};
 
 export const getAuthenticatedUser = () => {
-  return axios.get(`${BASE_URL}/getAuthenticatedUser`,{
+  return axios.get(`${ENDPOINT}/api/user/get`, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${localStorage.getItem("auth")}`,
     },
   });
-}
+};
