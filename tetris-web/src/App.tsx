@@ -44,13 +44,13 @@ function App() {
             <Route path="/signup">
               <SignUp onAuthenticated={() => setAuth(true)} />
             </Route>
-            <Route path="/tetris" component={TetrisSocket} />
             <Authenticated
               authenticated={isAuth}
               onAuthenticated={() => setAuth(true)}
             >
               <Route path="/account" component={Account} />
               <Route path="/user/:id" component={Account} />
+              <Route path="/lobby/:room" component={TetrisSocket} />
               <Route path="/" component={Lobbies} exact />
               <Route path="/search" component={Search} />
             </Authenticated>
