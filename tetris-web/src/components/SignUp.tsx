@@ -36,10 +36,11 @@ export const SignUp: React.FC<Props> = (props: Props) => {
       password.length >= 8 &&
       username.length > 0
     ) {
-      //TODO: Check if username is available
       signup(username, password)
         .then((response) => {
-          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("auth", response.data.auth);
+          localStorage.setItem("username", response.data.username);
+          localStorage.setItem("userId", response.data.userId);
           props.onAuthenticated();
         })
         .catch((err) => {

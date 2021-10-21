@@ -1,27 +1,13 @@
 import axios from "axios";
-
-const BASE_URL = "http://10.0.1.3:9090/user";
+import { ENDPOINT } from "./endpoint";
 
 export const getUser = (userID: number) => {
-    return axios.get(`${BASE_URL}/get`,{
+    return axios.get(`${ENDPOINT}/api/user/getbyid`,{
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth")}`,
         },
         params: {
             id: userID
         }
       });
-    /*return {
-        username: "John452",
-        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est nam ipsa consequatur laborum explicabo.",
-        games: [
-            {score: 1000, bpm: 4.56, date: 1631647493076},
-            {score: 1005, bpm: 4.89, date: 1631647493076},
-            {score: 980, bpm: 4.6, date: 1631647493076},
-            {score: 1100, bpm: 3.2, date: 1631647493076},
-            {score: 1090, bpm: 4.23, date: 1631647493076},
-            {score: 1150, bpm: 4.54, date: 1631647493076},
-            {score: 1200, bpm: 5.1, date: 1631647493076}
-        ]
-    }*/
 };
