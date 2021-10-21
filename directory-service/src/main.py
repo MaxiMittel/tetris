@@ -46,6 +46,7 @@ def registerServer():
     else:
         return jsonify({"status": "error"})
 
+
 @app.route("/directory-service/unregister/<id>", methods=['DELETE'])
 def unregisterServer(id):
     """
@@ -80,10 +81,10 @@ def getGameServer():
 @app.route("/directory-service/getapi", methods=['GET'])
 def getApiServer():
     """
-    Request all currently registered game servers.
+    Request all currently registered api servers.
 
     Returns:
-    A list with all registered services
+    A list with all registered api services
     """
     servers = list(__apiServerDict.values())
     return jsonify(server=servers)
@@ -91,10 +92,10 @@ def getApiServer():
 @app.route("/directory-service/getlb", methods=['GET'])
 def getLoadBalancer():
     """
-    Request all currently registered game servers.
+    Request all currently registered load balancers
 
     Returns:
-    A list with all registered services
+    A list with all registered load balancers
     """
     servers = list(__lbServerDict.values())
     return jsonify(server=servers)

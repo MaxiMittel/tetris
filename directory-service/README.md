@@ -15,14 +15,14 @@ port="7777"
 
 ``POST /directory-service/register``
 
-Register a game server to the directory service.
+Register a game/api/lb server to the directory service.
 
 ```json
 >> {
     "ip": "0.0.0.0",    //IP-Adress of the server
     "port": "7777",     //Port of the server
-    "name": "EU-1",     //Name of the server
-    "type": "GS"        //Type of the server GS or API
+    "name": "EU-1/API-1/LB-1",     //Name of the server
+    "type": "GS/API/LB"        //Type of the server GS or API
 }
 ```
 ```json
@@ -34,9 +34,9 @@ Register a game server to the directory service.
 
 ``DELETE /directory-service/unregister/<id>``
 
-Unregister a game server from the directory service.
+Unregister a game/api/lb server from the directory service.
 
-http://serverip/directory-service/unregister/Eu-1
+http://serverip/directory-service/unregister/{EU-1, API-1, LB-1}
 
 ```json
 << {
@@ -45,20 +45,20 @@ http://serverip/directory-service/unregister/Eu-1
 ```
 ***
 
-``GET /directory-service/getServer``
+``GET /directory-service/get{game,api,lb}Server``
 
-Request the data of all registered game servers
+Request the data of all registered game/api/lb servers
 
 ```json
 << servers: [{
     "ip": "0.0.0.0",    //IP-Adress of the game server
     "port": "7777",     //Port of the game server
-    "name": "EU-1"      //Name of the game server
+    "name": "EU-1/API-1/LB-1"      //Name of the game server
 }, 
 {
    "ip": "0.0.0.0",    //IP-Adress of the game server
     "port": "7777",     //Port of the game server
-    "name": "EU-2"     
+    "name": "EU-2/API-2/LB-2"     
 }]
 ```
 
