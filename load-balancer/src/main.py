@@ -3,16 +3,15 @@ from math import e
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
-from werkzeug.wrappers import response
 from serverObject import serverObject as so
 from db import *
 import socket
 import time
 from threading import Thread
-import sys
-sys.path.append('../../')
-import util.config as config
+import os
+from dotenv import load_dotenv, find_dotenv
 
+load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 CORS(app)
@@ -133,7 +132,7 @@ def createGameSession():
         serverPort = server.getPort()
         return dbAllocate(serverIp, serverPort, name)
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__, "_id": ""})
+        return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
 @app.route("/sessions/get", methods=['GET'])
@@ -259,7 +258,7 @@ def dropNonresponsiveServers():
     now = time.now
     forwardpath = "/directory-service/unregister/"
     for server in __gameServerDict.values:
-        if (now - server.getLastContact()) > config.TIMEOUT:
+        if (now - server.getLastContact()) > os.environ.get("TIMEOUT"):
             # also needs to kick out the server from the dir service list
             """ - Can be added in for testing
             endpoint = "http://" + server.getIp + ":" + server.getPort + "/" + forwardpath + server.getName
@@ -274,7 +273,7 @@ def dropNonresponsiveServers():
 
     for server in __apiServerDict.values:
 
-        if (now - server.getLastContact()) > config.TIMEOUT:
+        if (now - server.getLastContact()) > os.environ.get("TIMEOUT"):
             """
             endpoint = "http://" + server.getIp + ":" + server.getPort + "/" + forwardpath + server.getName
 
@@ -323,7 +322,7 @@ def pickLeastLoadedApiServer():
 def registerAtDirectoryService(myIp, myPort, myName):
     try:
         content = {"ip": myIp, "port": myPort, "name": myName , "type": "LB"}
-        endpoint = "http://" + config.DIR_IP + ":" + config.DIR_PORT + "/directory-service/register"
+        endpoint = "http://" + os.environ.get("DIR_IP") + ":" + os.environ.get("DIR_PORT") + "/directory-service/register"
         response = requests.post(url= endpoint, json= content)
         resp = response.json()
         return resp
@@ -367,9 +366,9 @@ def updateServersTask(dirIP, dirPort):
                     """ Update existing server"""
                     pass
 
-            time.sleep(config.PERIODIC_UPDATE) 
+            time.sleep(int(os.environ.get("PERIODIC_UPDATE"))) 
         except Exception as e:
-            time.sleep(config.PERIODIC_UPDATE)
+            time.sleep(int(os.environ.get("PERIODIC_UPDATE")))
             
 
 if __name__ == '__main__':
@@ -378,6 +377,6 @@ if __name__ == '__main__':
     myName = "loadbalancer_1"
 
     registerAtDirectoryService(myIp, myPort, myName)
-    Thread(target=updateServersTask, args=(config.DIR_IP, config.DIR_PORT), daemon=True).start()
+    Thread(target=updateServersTask, args=(os.environ.get("DIR_IP"), os.environ.get("DIR_PORT")), daemon=True).start()
     app.run(host='0.0.0.0', port=myPort, debug=False)
 

@@ -2,19 +2,22 @@ from flask import jsonify
 from flask_pymongo import pymongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
+from dotenv import load_dotenv, find_dotenv
+import json
+import os
+
+load_dotenv(find_dotenv())
 
 # Connection to game_session collection
-dbUri = "mongodb+srv://dbUser:dbUserPassword@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority"
+dbUri = "mongodb+srv://{}:{}@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority".format(os.environ.get("DB_USER"), os.environ.get("DB_PASSWORD"))
 GSC = pymongo.collection.Collection(pymongo.MongoClient(dbUri).get_database('tetris_db'), 'game_session')
 
 def dbGetGameSessions():
     try:
         result = list(GSC.find())
-        json_data = dumps(result, indent = 2)
-        return jsonify({"status": "success","sessions": json_data})
-
+        return jsonify({"status": "success", "sessions": json.loads(dumps(result))})
     except Exception as e:
-        return jsonify({"status": "error", "sessions": ""})
+        return jsonify({"status": "error"})
 
 
 def dbAllocate(serverIp, serverPort, name):
@@ -23,13 +26,13 @@ def dbAllocate(serverIp, serverPort, name):
         
         if result.acknowledged:
             gameSessionId = result.inserted_id
-            return jsonify({"status": "success", "error": "", "id": str(gameSessionId)})
+            return jsonify({"status": "success", "id": str(gameSessionId)})
         else:
             msg = "Operation not acknowledged"
-            return jsonify({"status": "error", "error": msg, "id": ""})
+            return jsonify({"status": "error", "error": msg})
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__, "id": ""})
+        return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
 
@@ -38,7 +41,7 @@ def dbRemoveGameSession(id):
         result = GSC.delete_one({"_id": ObjectId(id)})
         
         if result.deleted_count == 1:
-            return jsonify({"status": "success", "error": ""})
+            return jsonify({"status": "success"})
         else:
             msg = "No Game session with this ID was found"
             return jsonify({"status": "error", "error": msg})
@@ -60,7 +63,7 @@ def dbGetSingleGameSession(gameSessionId):
             return False
 
     except Exception as e:
-        return jsonify({"status": "error", "ip": "", "port": ""})  
+        return jsonify({"status": "error"})  
 
 
    
