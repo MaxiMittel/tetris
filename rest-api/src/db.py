@@ -4,8 +4,17 @@ from pymongo.errors import DuplicateKeyError, OperationFailure
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 import jwt
+import hashlib
+from dotenv import load_dotenv, find_dotenv
+import os
 
-SECRET = "CHANGE_SECRET"
+load_dotenv(find_dotenv())
+
+SECRET = os.environ.get("SECRET")
+
+"""
+Checks if a JWT token is valid
+"""
 def verify_jwt(token):
     try:
         return jwt.decode(token, SECRET, algorithms=['HS256'])
@@ -14,8 +23,20 @@ def verify_jwt(token):
     except jwt.exceptions.DecodeError:
         return False
 
+"""
+Retrieves the data from a JWT token
+"""
+def decode_jwt(token):
+    return jwt.decode(token, SECRET, algorithms=['HS256'])
+
+"""
+Encode the supplied data to a JWT token
+"""
+def encode_jwt(data):
+    return jwt.encode(data, SECRET, algorithm="HS256")
+
 # Connection to monogodb atlas
-dbUri = "mongodb+srv://dbUser:dbUserPassword@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority"
+dbUri = "mongodb+srv://{}:{}@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority".format(os.environ.get("DB_USER"), os.environ.get("DB_PASSWORD"))
 mongo = pymongo.MongoClient(dbUri)
 db = mongo.get_database('tetris_db')
 userData = pymongo.collection.Collection(db, 'user_data')
@@ -27,28 +48,28 @@ def dbSignup(newAccount, username):
 
     except Exception as e:
         msg = "Could not create unique value"
-        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
+        return jsonify({"status": "error", "error": msg}), 500
 
     try:
         result  = userData.insert_one(newAccount)
         
         if result.acknowledged:
-            token = jwt.encode({"id": str(result.inserted_id)}, SECRET , algorithm="HS256")
-            return jsonify({"status": "success", "error": "", "auth": token, "username": username})
+            token = encode_jwt({"id": str(result.inserted_id)})
+            return jsonify({"status": "success", "auth": token, "username": username})
         else:
             msg = "Operation not acknowledged"
-            return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
+            return jsonify({"status": "error", "error": msg}), 500
 
     except DuplicateKeyError:
         msg = "Duplicate key/username"
-        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
+        return jsonify({"status": "error", "error": msg}), 400
 
     except OperationFailure:
         msg = "Operation failure"
-        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
+        return jsonify({"status": "error", "error": msg}), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__, "auth": "", "username": ""})
+        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
 
 
 
@@ -58,20 +79,19 @@ def dbSignin(username, enteredPassword):
         result = userData.find_one({"username": username}, projection)
         if(result):
             if result["password"] != enteredPassword:
-                return jsonify({"status": "error", "error": "Wrong password", "username": ""})
-
+                return jsonify({"status": "error", "error": "Wrong password"}), 403
             else:
-                token = jwt.encode({"id": str(result["_id"])}, SECRET , algorithm="HS256")
+                token = encode_jwt({"id": str(result["_id"])})
                 return jsonify({"status": "success", "error": "", "auth": token, "username": result["username"]})
         else:
-           return jsonify({"status": "error", "error": "User not found", "username": ""}) 
+           return jsonify({"status": "error", "error": "User not found"}), 404
 
     except OperationFailure:
         msg = "Operation failure"
-        return jsonify({"status": "error", "error": msg, "auth": "", "username": ""})
+        return jsonify({"status": "error", "error": msg}), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__, "username": ""})  
+        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
 
 
 
@@ -83,14 +103,14 @@ def dbGetUser(userID):
             return jsonify({"status": "success", "error": "", "username": result["username"], "stats": result["stats"] })
         else:
             msg = "JWT encode error"
-            return jsonify({"status": "error", "error": msg, "username": "", "stats": ""})
+            return jsonify({"status": "error", "error": msg}), 400
 
     except OperationFailure:
         msg = "Operation Failure"
-        return jsonify({"status": "error", "error": msg, "username": "", "stats": ""})
+        return jsonify({"status": "error", "error": msg}), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__, "username": "", "stats": ""})        
+        return jsonify({"status": "error", "error": e.__class__.__name__}), 500        
 
 
 
@@ -102,20 +122,20 @@ def dbUpdateUser(userID, newUsername):
             result = userData.update_one(filter, update)
 
             if (result.modified_count > 0):
-                newAuth = jwt.encode({"id": userID["id"]}, SECRET , algorithm="HS256")
-                return jsonify({"status": "success", "error": "", "username": newUsername, "auth": newAuth})
+                newAuth = encode_jwt({"id": userID["id"]})
+                return jsonify({"status": "success", "username": newUsername, "auth": newAuth})
             else:
                 msg = "Failed to post update"
-                return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
+                return jsonify({"status": "error", "error": msg}), 400
 
         except OperationFailure:
             msg = "Operation failure"
-            return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
+            return jsonify({"status": "error", "error": msg}), 500
 
         except Exception as e:
-            return jsonify({"status": "error", "error": e.__class__.__name__, "username": "", "auth": ""})
+            return jsonify({"status": "error", "error": e.__class__.__name__}), 500
     else:
-        return jsonify({"status": "error", "error": "Incorrect authentication"})
+        return jsonify({"status": "error", "error": "Incorrect authentication"}), 403
 
 
 
@@ -128,18 +148,18 @@ def dbPostStat(userID, stat):
             result = userData.update_one(filter, update)
 
             if (result.modified_count > 0):
-                return jsonify({"status": "success", "error": ""})
+                return jsonify({"status": "success"})
             else:
                 msg = "Failed to post update"
-                return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
+                return jsonify({"status": "error", "error": msg}), 400
 
         except OperationFailure:
-            return jsonify({"status": "error", "error": "Operation Failure"})
+            return jsonify({"status": "error", "error": "Operation Failure"}), 500
 
         except Exception as e:
-            return jsonify({"status": "error", "error": e.__class__.__name__})
+            return jsonify({"status": "error", "error": e.__class__.__name__}), 500
     else:
-        return jsonify({"status": "error", "error": "Incorrect authentication"})
+        return jsonify({"status": "error", "error": "Incorrect authentication"}), 403
         
         
 
@@ -152,16 +172,15 @@ def dbFindUsers(search):
             projection = {"_id": 1, "username": 1, "highscore": 1}
             cursor = userData.find({ "username": { "$regex": search } }, projection)
             list_cur = list(cursor)
-            json_data = dumps(list_cur, indent = 2)
-            return jsonify({"users": json_data})
+            return jsonify({"users": list_cur})
 
         except OperationFailure:
-            return jsonify({"users": ""})
+            return jsonify({"users": []})
 
         except Exception as e:
-            return jsonify({"users": ""})
+            return jsonify({"users": []})
     else:
-        return jsonify({"users": ""})
+        return jsonify({"users": []})
 
 
         
@@ -172,9 +191,12 @@ def dbFindUserById(userID):
         if result:
             return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"]})
         else:
-            return jsonify({"id": "", "username": "", "stats": ""}) 
+            return jsonify({"error": "User not found"}), 404 
     except OperationFailure:
-        return jsonify({"id": "", "username": "", "stats": ""})
+        return jsonify({"error": "User not found"}), 500
 
     except Exception as e:
-        return jsonify({"id": "", "username": "", "stats": "", "error": e.__class__.__name__})
+        return jsonify({"error": e.__class__.__name__}), 500
+
+def hashPassword(password):
+    return hashlib.sha256(password.encode()).hexdigest()
