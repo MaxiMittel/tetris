@@ -3,13 +3,17 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from game_state import GameState
 import socket
-from ...util.serverHelper import *
+from util.serverHelper import *
 import sys
+from dotenv import load_dotenv, find_dotenv
+import os
+
+load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 CORS(app)
 
-app.config['SECRET_KEY'] = 'CHANGE_SECRET!'
+app.config['SECRET_KEY'] = os.environ.get('SECRET')
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 game = {} # {room: GameState}
