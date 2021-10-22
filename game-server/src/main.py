@@ -3,10 +3,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from game_state import GameState
 import socket
-
+from ...util.serverHelper import *
 import sys
-sys.path.append('../../')
-from util.serverHelper import *
 
 app = Flask(__name__)
 CORS(app)
@@ -132,6 +130,19 @@ def chat_message(data):
     message = data['msg']
 
     sendAll("onChatMessage", room, {"message": message})
+
+"""
+Migrate an game session froma another server
+"""
+@socketio.on('migrate')
+def migrate(data):
+    room = data['room']
+    gameField = data['field']
+    players = data['players']
+
+    game[room] = GameState(gameField, players)
+
+    sendAll('onMigrate', room, game[room].get_players())
 
 
 """
