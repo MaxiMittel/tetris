@@ -257,12 +257,34 @@ def registerCheck(content):
 def dropNonresponsiveServers():
     """ Go through all servers and drop non"""
     now = time.now
+    forwardpath = "/directory-service/unregister/"
     for server in __gameServerDict.values:
         if (now - server.getLastContact()) > config.TIMEOUT:
+            # also needs to kick out the server from the dir service list
+            """ - Can be added in for testing
+            endpoint = "http://" + server.getIp + ":" + server.getPort + "/" + forwardpath + server.getName
+
+            try:
+                requests.delete(url=endpoint, params=request.args)
+
+            except Exception as e:
+                print(server.getName + "could not be deleted on the directory service!")
+            """
             __gameServerDict.pop(server.getName())
 
     for server in __apiServerDict.values:
+
         if (now - server.getLastContact()) > config.TIMEOUT:
+            """
+            endpoint = "http://" + server.getIp + ":" + server.getPort + "/" + forwardpath + server.getName
+
+            try:
+                requests.delete(url=endpoint, params=request.args)
+
+            except Exception as e:
+                print(server.getName + "could not be deleted on the directory service!")
+            """
+
             __apiServerDict.pop(server.getName())
 
 
