@@ -7,7 +7,15 @@ class GameState:
         self.score = 0
 
     def add_player(self, username, id, sid):
-        self.players.append({'username': username, "sid": sid, 'id': id, "ready": False, "block": False})
+        player_exists = False
+        for player in self.players:
+            if player['id'] == id:
+                player["sid"] = sid
+                player_exists = True
+
+        if not player_exists:
+            self.players.append({'username': username, "sid": sid, 'id': id, "ready": False, "block": False})
+
         self.clients.append(sid)
 
     def remove_player(self, sid):

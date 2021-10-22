@@ -139,6 +139,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       setLobbyText(`Game over! Score: ${response.score}`);
       setGameOver(true);
       setGameRunning(false);
+      deleteLobby(room, socketAddress!.ip, socketAddress!.port);
     });
   }, [socket, room, socketAddress]);
 
