@@ -37,7 +37,7 @@ def registerService(myIp, myPort, myName, myType):
 
     #Register at Directory service
     try:
-        endpoint = "http://" + config.DIR_IP + ":" + config.DIR_PORT + "/directory-service/register" 
+        endpoint = "http://" + os.environ.get("DIR_IP") + ":" + os.environ.get("DIR_PORT") + "/directory-service/register" 
         content = {"ip": myIp, "port": myPort, "name": myName, "type": myType}
         postResponse = requests.post(url= endpoint, json= content)
     except Exception as e:
