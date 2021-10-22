@@ -1,5 +1,5 @@
 import React from "react";
-import { signup } from "../api/account";
+import { signin } from "../api/account";
 
 interface Props {
   onAuthenticated: () => void;
@@ -15,8 +15,11 @@ export const SignIn: React.FC<Props> = (props: Props) => {
   const onSubmit = async (e: any) => {
     e.preventDefault();
 
-    signup(username, password)
+    signin(username, password)
       .then(response => {
+
+        console.log(response.data);
+        
         setLoginSuccessfull(true);
         localStorage.setItem("auth", response.data.auth);
         localStorage.setItem("username", response.data.username);

@@ -27,7 +27,7 @@ function App() {
       isAuthenticated()
         .then((response) => setAuth(response.data.message === "Success"))
         .catch(() => setAuth(false));
-    });
+    }).catch(() => setAuth(false));
   }, []);
 
   return (

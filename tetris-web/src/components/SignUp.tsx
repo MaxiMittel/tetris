@@ -38,6 +38,8 @@ export const SignUp: React.FC<Props> = (props: Props) => {
     ) {
       signup(username, password)
         .then((response) => {
+          console.log(response.data);
+          
           localStorage.setItem("auth", response.data.auth);
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("userId", response.data.userId);

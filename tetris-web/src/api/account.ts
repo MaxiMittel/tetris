@@ -9,7 +9,7 @@ export const signup = (username: string, password: string) => {
 };
 
 export const signin = (username: string, password: string) => {
-  axios.post(`${ENDPOINT}/api/account/signin`, {
+  return axios.post(`${ENDPOINT}/api/account/signin`, {
     username,
     password,
   });
