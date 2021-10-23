@@ -203,9 +203,7 @@ def forwardGetRequest(forwardpath):
     api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
-
-        print("HEADERS", request.headers)
-
+        
         try:
             response = requests.get(url= endpoint, json= content, params= request.args, headers=request.headers)
             return jsonify(response.json())

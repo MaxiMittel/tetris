@@ -14,8 +14,11 @@ GSC = pymongo.collection.Collection(pymongo.MongoClient(dbUri).get_database('tet
 
 def dbGetGameSessions():
     try:
-        result = list(GSC.find())
-        return jsonify({"status": "success", "sessions": json.loads(dumps(result))})
+        sessions = []
+        for doc in GSC.find():
+            sessions.append({"id": str(doc["_id"]), "ip": doc["ip"], "port": doc["port"], "name": doc["name"]})
+
+        return jsonify({"status": "success", "sessions": sessions})
     except Exception as e:
         return jsonify({"status": "error"})
 
