@@ -58,8 +58,7 @@ def getUser():
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
-    return dbGetUser(decode_jwt(token)["id"])
-
+    return dbFindUserById(decode_jwt(token)["id"])
 
 @app.route("/user/getbyid", methods=['GET'])
 def getUserById():
@@ -133,9 +132,9 @@ def search():
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
-    content = request.json
+    content = request.args
     if (content):
-        search = content["query"]
+        search = content.get("query")
         return dbFindUsers(search)
     else:
         msg = "No arguements passed"

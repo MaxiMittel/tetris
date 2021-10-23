@@ -171,8 +171,12 @@ def dbFindUsers(search):
         try:
             projection = {"_id": 1, "username": 1, "highscore": 1}
             cursor = userData.find({ "username": { "$regex": search } }, projection)
-            list_cur = list(cursor)
-            return jsonify({"users": list_cur})
+
+            users = []
+            for doc in cursor:
+                users.append({"id": str(doc["_id"]), "username": doc["username"], "highscore": doc["highscore"]})
+
+            return jsonify({"users": users})
 
         except OperationFailure:
             return jsonify({"users": []})
@@ -186,10 +190,10 @@ def dbFindUsers(search):
         
 def dbFindUserById(userID):
     try:
-        projection = {"_id": 1, "username": 1, "stats": 1}
+        projection = {"_id": 1, "username": 1, "stats": 1, "highscore": 1}
         result = userData.find_one({"_id": ObjectId(userID) }, projection)
         if result:
-            return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"]})
+            return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"], "highscore": result["highscore"]})
         else:
             return jsonify({"error": "User not found"}), 404 
     except OperationFailure:
