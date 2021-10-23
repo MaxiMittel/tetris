@@ -11,7 +11,6 @@ import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
 import { TetrisSocket } from "./components/TetrisSocket";
 import { Search } from "./components/Search";
-import { requestEndpoint } from "./api/endpoint";
 
 function App() {
   const halfmoon = require("halfmoon");
@@ -23,11 +22,9 @@ function App() {
   const [isAuth, setAuth] = useState(true);
 
   useEffect(() => {
-    requestEndpoint().then(() => {
-      isAuthenticated()
-        .then((response) => setAuth(response.data.message === "Success"))
-        .catch(() => setAuth(false));
-    }).catch(() => setAuth(false));
+    isAuthenticated()
+      .then((response) => setAuth(response.data.message === "Success"))
+      .catch(() => setAuth(false));
   }, []);
 
   return (

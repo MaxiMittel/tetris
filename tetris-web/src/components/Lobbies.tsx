@@ -10,13 +10,25 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
 
   useEffect(() => {
     getLobbies().then((response) => {
-      setLobbies(response.data);
+      setLobbies(response.data.sessions);
     });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getLobbies().then((response) => {
+        setLobbies(response.data.sessions);
+      });
+    }, 1000);
+
+    return () => { clearInterval(interval); };
   }, []);
 
   const onNewLobby = (e: any) => {
     e.preventDefault();
-    createLobby(lobbyName);
+    createLobby(lobbyName).then((response) => {
+      window.location.href = `/lobby/${response.data.id}`;
+    });
   };
 
   return (
@@ -32,7 +44,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
               <LobbyItem
                 players={lobby.players}
                 lobbyName={lobby.name}
-                code={lobby.code}
+                code={lobby.id}
                 key={"lobby_item_" + index}
               />
             ))}

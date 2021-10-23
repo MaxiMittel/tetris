@@ -1,13 +1,15 @@
 import axios from "axios";
-import { ENDPOINT } from "./endpoint";
+import { requestEndpoint } from "./endpoint";
 
 export const search = (query: string) => {
-    return axios.get(`${ENDPOINT}/api/search`,{
+  return requestEndpoint().then((endpoint) => {
+    return axios.get(`${endpoint}/api/user/search`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("auth")}`,
       },
       params: {
-          query
-        }
+        query,
+      },
     });
-  }
+  });
+};

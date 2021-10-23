@@ -1,4 +1,5 @@
 import React from "react";
+import logo from "../assets/logo_text.png";
 
 interface Props {
   authenticated: boolean;
@@ -21,7 +22,7 @@ export const Navbar: React.FC<Props> = (props: Props) => {
         <nav className="navbar">
           <a href="/" className="navbar-brand">
             <img
-              src="logo_text.png"
+              src={logo}
               alt="logo"
             />
           </a>

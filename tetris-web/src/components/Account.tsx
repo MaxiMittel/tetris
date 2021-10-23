@@ -23,18 +23,20 @@ export const Account: React.FC<Props> = (props: Props) => {
         setUsername(userInfo.username);
         setHighscore(userInfo.highscore);
 
-        setHsData(
-          generateDiagramData(
-            userInfo.games.map((game: any) => game.score),
-            "#D11149"
-          )
-        );
-        setBpmData(
-          generateDiagramData(
-            userInfo.games.map((game: any) => game.bpm),
-            "#6610F2"
-          )
-        );
+        if (userInfo.stats.length > 0) {
+          setHsData(
+            generateDiagramData(
+              userInfo.stats.map((game: any) => game.score),
+              "#D11149"
+            )
+          );
+          setBpmData(
+            generateDiagramData(
+              userInfo.stats.map((game: any) => game.bpm),
+              "#6610F2"
+            )
+          );
+        }
       })
       .catch((error: any) => console.log(error));
   }, [id]);
@@ -51,11 +53,13 @@ export const Account: React.FC<Props> = (props: Props) => {
         <div className="col-lg-9">
           <div className="card">
             <h2 className="card-title">Highscores</h2>
-            <Line data={hsData} options={chartOptions} />
+            {hsData && <Line data={hsData} options={chartOptions} />}
+            {!hsData && <p>No highscores</p>}
           </div>
           <div className="card">
             <h2 className="card-title">Blocks per minute</h2>
-            <Line data={bpmData} options={chartOptions} />
+            {bpmData && <Line data={hsData} options={chartOptions} />}
+            {!bpmData && <p>No bpm data</p>}
           </div>
         </div>
       </div>
@@ -65,6 +69,10 @@ export const Account: React.FC<Props> = (props: Props) => {
 
 // Generate a data object for the chart
 const generateDiagramData = (data: any[], color: string) => {
+  if (data.length === 0) {
+    return undefined;
+  }
+
   return {
     labels: ["-", "-", "-", "-", "-", "-", "-"],
     datasets: [

@@ -37,13 +37,12 @@ export const SignUp: React.FC<Props> = (props: Props) => {
       username.length > 0
     ) {
       signup(username, password)
-        .then((response) => {
-          console.log(response.data);
-          
+        .then((response) => {          
           localStorage.setItem("auth", response.data.auth);
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("userId", response.data.userId);
           props.onAuthenticated();
+          window.history.pushState({}, "", "/");
         })
         .catch((err) => {
           setUsernameAvailable(false);

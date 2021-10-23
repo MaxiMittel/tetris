@@ -2,7 +2,7 @@
 export type Lobby = {
     name: string,
     players: number,
-    code: string
+    id: string
 }
 
 export enum Colors {

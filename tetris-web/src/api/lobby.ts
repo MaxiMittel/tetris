@@ -1,22 +1,32 @@
 import axios from "axios";
-import { ENDPOINT } from "./endpoint";
+import { requestEndpoint } from "./endpoint";
 
 export const getLobbies = () => {
-  return axios.get(`${ENDPOINT}/gameserver/list`);
+  return requestEndpoint().then((endpoint) => {
+    return axios.get(`${endpoint}/sessions/list`);
+  });
 };
 
 export const createLobby = (name: string) => {
-  return axios.post(`${ENDPOINT}/gameserver/allocate`, { name: name });
+  return requestEndpoint().then((endpoint) => {
+    return axios.post(`${endpoint}/sessions/allocate`, { name: name });
+  });
 };
 
 export const getLobby = (id: string) => {
-  return axios.get(`${ENDPOINT}/gameserver/get`, { params: { id } });
+  return requestEndpoint().then((endpoint) => {
+    return axios.get(`${endpoint}/sessions/get`, { params: { id } });
+  });
 };
 
 export const deleteLobby = (id: string, ip: string, port: number) => {
-  return axios.post(`${ENDPOINT}/gameserver/delete`, { id, ip, port });
+  return requestEndpoint().then((endpoint) => {
+    return axios.post(`${endpoint}/sessions/delete`, { id, ip, port });
+  });
 };
 
 export const migrateLobby = (id: string, name: string) => {
-  return axios.post(`${ENDPOINT}/gameserver/migrate`, { id: id, name: name });
+  return requestEndpoint().then((endpoint) => {
+    return axios.post(`${endpoint}/sessions/migrate`, { id: id, name: name });
+  });
 };

@@ -6,7 +6,7 @@ interface Props {}
 export const Search: React.FC<Props> = (props: Props) => {
   type Result = {
     id: string;
-    name: string;
+    username: string;
     highscore: number;
   };
 
@@ -16,7 +16,7 @@ export const Search: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     if (query.length > 0) {
       search(query)
-        .then((response) => {
+        .then((response) => {          
           setResults(response.data.users);
         })
         .catch(() => {
@@ -36,11 +36,12 @@ export const Search: React.FC<Props> = (props: Props) => {
       ></input>
       <div className="searchResultsContainer">
         {results.length <= 0 && <p className="noResults">No results found.</p>}
-        {results.map((result) => (
+        {results.map((result, index) => (
           <SearchResult
-            name={result.name}
+            username={result.username}
             highscore={result.highscore}
             id={result.id}
+            key={`search_result_${index}`}
           />
         ))}
       </div>
@@ -49,7 +50,7 @@ export const Search: React.FC<Props> = (props: Props) => {
 };
 
 interface SearchResultsProps {
-  name: string;
+  username: string;
   highscore: number;
   id: string;
 }
@@ -60,7 +61,7 @@ const SearchResult: React.FC<SearchResultsProps> = (
   return (
     <div className="w-400 mw-full">
       <div className="card">
-        <h2 className="card-title">{props.name}</h2>
+        <h2 className="card-title">{props.username}</h2>
         <p>
           Highscore :{" "}
           <span className="badge badge-primary">{props.highscore}</span>
