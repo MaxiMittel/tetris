@@ -48,8 +48,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     let newSocket: any;
 
+    console.log("NEW SOCKET", socketAddress);
+    
+
     if (socketAddress) {
       newSocket = io(`ws://${socketAddress.ip}:${socketAddress.port}`);
+      console.log("CONNECTED");
       setSocket(newSocket);
     }
 
@@ -73,7 +77,9 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     if (socket) {
       socket.on("connect", () => {
+        console.log("Connected to server");
         if (players.length !== 0) {
+          console.log("Sending players");
           socket.emit("migrate", { room, field, players });
         }
       });
@@ -91,7 +97,9 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       setTimeout(() => {
         if (socketAddress) {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
+            console.log("DELETED");
             migrateLobby(room, "migrated-lobby").then((response) => {
+              console.log("MIGRATE", response, response.data.ip, response.data.port);
               setSocketAddress({
                 ip: response.data.ip,
                 port: response.data.port,

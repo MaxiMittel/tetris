@@ -35,6 +35,7 @@ def dbAllocate(serverIp, serverPort, name):
             return jsonify({"status": "error", "error": msg})
 
     except Exception as e:
+        print(e)
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
@@ -63,7 +64,7 @@ def dbGetSingleGameSession(gameSessionId):
         if result:
             return jsonify({"status": "success", "ip": result["ip"], "port": result["port"]})
         else:
-            return False
+            return jsonify({"status": "error"})  
 
     except Exception as e:
         return jsonify({"status": "error"})  

@@ -152,7 +152,7 @@ def deleteGameSession():
     """
     try:
         content = request.json
-        sessionId = content["_id"]
+        sessionId = content["id"]
         serverIp = content["ip"]
         serverPort = content["port"]
         response = dbGetSingleGameSession(sessionId)
@@ -174,22 +174,22 @@ def migrateSingleGameSession():
     """
     try:
         content = request.json
-        sessionId = content["_id"]
+        sessionId = content["id"]
         name = content["name"]
         response = dbGetSingleGameSession(sessionId)
         result = response.json
         
-        if not result:
+        if result["status"] == "error":
             dropNonresponsiveServers()
             server = pickLeastLoadedGameServer()
             serverIp = server.getIp()
             serverPort = server.getPort()
             return dbAllocate(serverIp, serverPort, name)
-
         else:
             return result
 
     except Exception as e:
+        print(e)
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
@@ -256,7 +256,7 @@ def registerCheck(content):
 
 def dropNonresponsiveServers():
     """ Go through all servers and drop non"""
-    now = time.now
+    now = datetime.now()
     forwardpath = "/directory-service/unregister/"
     for server in __gameServerDict.values:
         if (now - server.getLastContact()) > os.environ.get("TIMEOUT"):
