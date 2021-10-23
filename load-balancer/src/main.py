@@ -204,8 +204,10 @@ def forwardGetRequest(forwardpath):
     if api:
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
+        print("HEADERS", request.headers)
+
         try:
-            response = requests.get(url= endpoint, json= content, params= request.args)
+            response = requests.get(url= endpoint, json= content, params= request.args, headers=request.headers)
             return jsonify(response.json())
             
         except Exception as e:
@@ -225,7 +227,7 @@ def forwardPostRequest(forwardpath):
         endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
 
         try:
-            response = requests.post(url= endpoint, json= content)
+            response = requests.post(url= endpoint, json= content, headers=request.headers)
             return jsonify(response.json())
 
         except Exception as e:
