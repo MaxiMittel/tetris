@@ -20,7 +20,7 @@ def registerService(myIp, myPort, myName, myType):
         getResponse = requests.get(url= endpoint)
         lbList = getResponse.json()
         lb = random.choice(lbList["server"])
-        lbPath = "http://" + lb["ip"] + ":" + lb["port"]
+        lbPath = "http://" + str(lb["ip"]) + ":" + str(lb["port"])
     except Exception as e:
         print("Exception when getting LB from DS: " + str(e))
         return False

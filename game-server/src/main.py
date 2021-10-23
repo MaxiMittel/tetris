@@ -158,14 +158,14 @@ def sendAll(action, room, message):
 
 
 if __name__ == '__main__':
-    try:
-        myName = sys.argv[1]
-    except:
-        print("Usage guide: <arg1: server name>")
-        sys.exit()
 
-    myIp = socket.gethostbyname(socket.gethostname())
-    myPort = "8080"
+    if len(sys.argv) == 3:
+        host = socket.gethostbyname(socket.gethostname())
+        port = int(sys.argv[1])
+        name = sys.argv[2]
 
-    registerService(myIp, myPort, myName, "GS")
-    socketio.run(app, debug=False)
+        registerService(host, port, name, "GS")
+        socketio.run(app, port=port, debug=True)
+    else:
+        print("Usage: python main.py <port> <name>")
+        exit()

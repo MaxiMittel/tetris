@@ -55,7 +55,7 @@ def dbSignup(newAccount, username):
         
         if result.acknowledged:
             token = encode_jwt({"id": str(result.inserted_id)})
-            return jsonify({"status": "success", "auth": token, "username": username})
+            return jsonify({"status": "success", "id": str(result.inserted_id), "auth": token, "username": username})
         else:
             msg = "Operation not acknowledged"
             return jsonify({"status": "error", "error": msg}), 500
@@ -82,7 +82,7 @@ def dbSignin(username, enteredPassword):
                 return jsonify({"status": "error", "error": "Wrong password"}), 403
             else:
                 token = encode_jwt({"id": str(result["_id"])})
-                return jsonify({"status": "success", "error": "", "auth": token, "username": result["username"]})
+                return jsonify({"status": "success", "id": str(result["_id"]), "auth": token, "username": result["username"]})
         else:
            return jsonify({"status": "error", "error": "User not found"}), 404
 
@@ -100,7 +100,7 @@ def dbGetUser(userID):
         if(userID != False):
             projection = {"_id": 1, "username": 1, "stats": 1}
             result  = userData.find_one( {"_id": ObjectId(userID["id"])}, projection)
-            return jsonify({"status": "success", "error": "", "username": result["username"], "stats": result["stats"] })
+            return jsonify({"status": "success", "username": result["username"], "stats": result["stats"] })
         else:
             msg = "JWT encode error"
             return jsonify({"status": "error", "error": msg}), 400

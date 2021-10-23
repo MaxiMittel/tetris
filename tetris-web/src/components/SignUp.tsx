@@ -40,9 +40,9 @@ export const SignUp: React.FC<Props> = (props: Props) => {
         .then((response) => {          
           localStorage.setItem("auth", response.data.auth);
           localStorage.setItem("username", response.data.username);
-          localStorage.setItem("userId", response.data.userId);
+          localStorage.setItem("userId", response.data.id);
           props.onAuthenticated();
-          window.history.pushState({}, "", "/");
+          window.location.href = "/";
         })
         .catch((err) => {
           setUsernameAvailable(false);

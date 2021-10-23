@@ -9,6 +9,7 @@ import socket
 import time
 from threading import Thread
 import os
+import sys
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -202,7 +203,7 @@ def forwardGetRequest(forwardpath):
     content = request.json
     api = pickLeastLoadedApiServer()
     if api:
-        endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
+        endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
         
         try:
             response = requests.get(url= endpoint, json= content, params= request.args, headers=request.headers)
@@ -222,7 +223,7 @@ def forwardPostRequest(forwardpath):
     content = request.json
     api = pickLeastLoadedApiServer()
     if api:
-        endpoint = "http://" + api.getIp() + ":" + api.getPort() + "/" + forwardpath
+        endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
 
         try:
             response = requests.post(url= endpoint, json= content, headers=request.headers)
@@ -372,11 +373,16 @@ def updateServersTask(dirIP, dirPort):
             
 
 if __name__ == '__main__':
-    myIp = socket.gethostbyname(socket.gethostname())
-    myPort = "7778"
-    myName = "loadbalancer_1"
 
-    registerAtDirectoryService(myIp, myPort, myName)
-    Thread(target=updateServersTask, args=(os.environ.get("DIR_IP"), os.environ.get("DIR_PORT")), daemon=True).start()
-    app.run(host='0.0.0.0', port=myPort, debug=False)
+    if len(sys.argv) == 3:
+        host = socket.gethostbyname(socket.gethostname())
+        port = int(sys.argv[1])
+        name = sys.argv[2]
+
+        registerAtDirectoryService(host, port, name)
+        Thread(target=updateServersTask, args=(os.environ.get("DIR_IP"), os.environ.get("DIR_PORT")), daemon=True).start()
+        app.run(host=host, port=port, debug=False)
+    else:
+        print("Usage: python main.py <port> <name>")
+        exit()
 

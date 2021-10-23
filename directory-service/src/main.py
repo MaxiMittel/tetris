@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from serverObject import ServerObject as so
 from serverObject import serverObjectJSONEncoder as sOJE
-import random
+import sys
 
 app = Flask(__name__)
 CORS(app)
@@ -112,4 +112,8 @@ def __empty_check(content):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7777, debug=False)
+
+    if len(sys.argv) == 2:
+        app.run(host='0.0.0.0', port=int(sys.argv[1]))
+    else:
+        print("Usage: python3 main.py <port>")

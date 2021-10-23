@@ -8,14 +8,13 @@ import { useParams } from "react-router";
 import { deleteLobby, getLobby, migrateLobby } from "../api/lobby";
 
 const fieldSize = { x: 30, y: 20 };
+const username = localStorage.getItem("username") || "Jaqen H'ghar";
+const id = localStorage.getItem("id") || "error_id" + Math.random();
 
-interface Props {
-  username: string;
-  id: string;
-}
+interface Props {}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
-  const { username, id } = props;
+  
   const { room } = useParams<any>();
 
   const initPlayer = {
@@ -55,7 +54,9 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     }
 
     return () => {
-      newSocket.close();
+      if(newSocket) {
+        newSocket.close();
+      }
     };
   }, [socketAddress]);
 
@@ -64,9 +65,10 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
    */
   useEffect(() => {
     if (socket) {
+      console.log("Joining room");
       socket.emit("join", { room, username: username, id: id });
     }
-  }, [socket, username, id, room]);
+  }, [socket, room]);
 
   useEffect(() => {
     if (socket) {

@@ -23,7 +23,7 @@ function App() {
 
   useEffect(() => {
     isAuthenticated()
-      .then((response) => setAuth(response.data.message === "Success"))
+      .then((response) => {console.log(response); setAuth(response.data.message === "Success")})
       .catch(() => setAuth(false));
   }, []);
 

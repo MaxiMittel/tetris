@@ -10,6 +10,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
 
   useEffect(() => {
     getLobbies().then((response) => {
+      console.log(response.data.sessions);
       setLobbies(response.data.sessions);
     });
   }, []);

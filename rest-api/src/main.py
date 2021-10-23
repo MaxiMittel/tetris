@@ -153,15 +153,15 @@ def getAccount():
     
 
 if __name__ == '__main__':
-    try:
-        myName = sys.argv[1]
-    except:
-        print("Usage guide: <arg1: server name>")
-        sys.exit()
 
-    myIp = socket.gethostbyname(socket.gethostname())
-    myPort = "9090"
+    if len(sys.argv) == 3:
+        host = socket.gethostbyname(socket.gethostname())
+        port = int(sys.argv[1])
+        name = sys.argv[2]
 
-    registerService(myIp, myPort, myName, "API")
-    app.run(host="0.0.0.0", port=myPort, debug=False)
+        registerService(host, port, name, "API")
+        app.run(host=host, port=port, debug=False)
+    else:
+        print("Usage: python main.py <port> <name>")
+        exit()
 
