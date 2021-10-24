@@ -258,7 +258,7 @@ def dropNonresponsiveServers():
     """ Go through all servers and drop non"""
     now = datetime.now()
     forwardpath = "/directory-service/unregister/"
-    for server in __gameServerDict.values:
+    for server in __gameServerDict.values():
         if (now - server.getLastContact()) > os.environ.get("TIMEOUT"):
             # also needs to kick out the server from the dir service list
             """ - Can be added in for testing
