@@ -40,6 +40,7 @@ def registerServer():
         elif content["type"] == "API":
             apiso = so.makeServerObject(content["ip"], content["port"], content["name"])
             __apiServerDict[content["name"]] = apiso
+            notifyLoadbalancer()
 
         else:
             return jsonify({"status": "error"})
@@ -65,6 +66,7 @@ def unregisterServer(id):
 
     elif id in __apiServerDict.keys():
         __apiServerDict.pop(id)
+        notifyLoadbalancer()
         return jsonify({"status": "success"})
 
     return jsonify({"status": "error"})
@@ -81,6 +83,7 @@ def getGameServer():
     servers = list(__gameServerDict.values())
     return jsonify(server=servers)
 
+
 @app.route("/directory-service/getapi", methods=['GET'])
 def getApiServer():
     """
@@ -91,6 +94,7 @@ def getApiServer():
     """
     servers = list(__apiServerDict.values())
     return jsonify(server=servers)
+
 
 @app.route("/directory-service/getlb", methods=['GET'])
 def getLoadBalancer():
@@ -114,6 +118,22 @@ def __empty_check(content):
         return False
 
 
+def notifyLoadbalancer():
+    """
+    When the entries in the api dictionary changes, these changes are posted to the load balancer
+    """
+    for server in __lbServerDict.values():
+        forwardpath = "loadbalancer/notify"
+        endpoint = "http://" + str(server.getIp()) + ":" + str(server.getPort()) + "/" + forwardpath
+        servers = list(__apiServerDict.values())
+        content = jsonify(servers=servers)
+
+        try:
+            response = requests.post(url=endpoint, json=content, headers=request.headers)
+        except Exception as e:
+            print("API Server list update at the Loadbalancer was unsuccessful ")
+
+
 def remove_unresponsive(server_dict):
     """
     Remove unresponsive servers.
@@ -122,6 +142,7 @@ def remove_unresponsive(server_dict):
         response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
         if response.status_code != 200:
             server_dict.pop(server.getName(), None)
+
 
 def heartbeat_thread():
     """
@@ -136,7 +157,7 @@ def heartbeat_thread():
         remove_unresponsive(__lbServerDict)
 
         time.sleep(1)
-        
+
 
 if __name__ == '__main__':
 

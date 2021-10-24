@@ -16,6 +16,7 @@ port="7777"
 ``POST /directory-service/register``
 
 Register a game/api/lb server to the directory service.
+When the api server list is updated the load balancer gets notified with an updated list.
 
 ```json
 >> {
@@ -35,6 +36,7 @@ Register a game/api/lb server to the directory service.
 ``DELETE /directory-service/unregister/<id>``
 
 Unregister a game/api/lb server from the directory service.
+When the api server list is updated the load balancer gets notified with an updated list.
 
 http://serverip/directory-service/unregister/{EU-1, API-1, LB-1}
 
