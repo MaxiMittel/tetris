@@ -1,5 +1,7 @@
 import axios from "axios";
-import { requestEndpoint } from "./endpoint";
+import { SocketAddress } from "../types";
+import { getGameServers, requestEndpoint } from "./endpoint";
+import { getBestServer } from "./ping";
 
 export const getLobbies = () => {
   return requestEndpoint().then((endpoint) => {
@@ -9,7 +11,11 @@ export const getLobbies = () => {
 
 export const createLobby = (name: string) => {
   return requestEndpoint().then((endpoint) => {
-    return axios.post(`${endpoint}/sessions/allocate`, { name: name });
+    getGameServers().then((servers) => {
+      getBestServer(servers as SocketAddress[]).then((server) => {
+        return axios.post(`${endpoint}/sessions/allocate`, { name, server });
+      });
+    });
   });
 };
 
@@ -27,6 +33,10 @@ export const deleteLobby = (id: string, ip: string, port: number) => {
 
 export const migrateLobby = (id: string, name: string) => {
   return requestEndpoint().then((endpoint) => {
-    return axios.post(`${endpoint}/sessions/migrate`, { id: id, name: name });
+    getGameServers().then((servers) => {
+      getBestServer(servers as SocketAddress[]).then((server) => {
+        return axios.post(`${endpoint}/sessions/migrate`, { id, name, server });
+      });
+    });
   });
 };

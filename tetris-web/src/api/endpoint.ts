@@ -29,3 +29,22 @@ export const requestEndpoint = () => {
     }
   });
 };
+
+export const getGameServers = () => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`${DIRECTORY_SERVICE}/directory-service/getgs`)
+      .then((response) => {
+        // Get all available load balancers
+        const gameServers = response.data.server.map((gs: any) => {
+          return {ip: gs.ip, port: gs.port};
+        });
+
+        resolve(gameServers);
+      })
+      .catch((error) => {
+        console.log(error);
+        reject();
+      });
+  });
+}
