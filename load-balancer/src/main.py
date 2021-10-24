@@ -21,6 +21,9 @@ apiServerDict = {}
 def index():
     return "Success! Load balancer is running."
 
+@app.route("/ping")
+def ping():
+    return "pong", 200
 
 @app.route("/loadbalancer/notify", methods=['POST'])
 def updateServers():
