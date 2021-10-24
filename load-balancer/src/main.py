@@ -30,7 +30,6 @@ def updateServers():
     #If a server is in apiServerDict but not in update, remove it:
     for oldServer in list(apiServerDict.values()):
         if(not list(filter(lambda server: server['name'] == oldServer.getName(), servers))):
-            #print(oldServer.getName() + " is not in incoming, to be removed")
             apiServerDict.pop(oldServer.getName())
 
     for server in servers:
@@ -48,10 +47,6 @@ def updateServers():
             newIp = server["ip"]
             newPort = server["port"]
             apiServerDict[newName] = so.makeServerObject(newIp,newPort,newName)
-
-    # TODO REMOVE LATER, FOR TRACING
-    #for a in apiServerDict.values():
-    #    print("name: " + str(a.getName()), " ip: " + str(a.getIp()), " port: " + str(a.getPort()), " metric: " + str(a.getMetric()))
 
     return jsonify({"status": "success"})
 
