@@ -10,11 +10,20 @@ export const getLobbies = () => {
 };
 
 export const createLobby = (name: string) => {
-  return requestEndpoint().then((endpoint) => {
-    getGameServers().then((servers) => {
-      getBestServer(servers as SocketAddress[]).then((server) => {
-        return axios.post(`${endpoint}/sessions/allocate`, { name, server });
-      });
+  return new Promise((resolve, reject) => {
+    requestEndpoint().then((endpoint) => {
+      getGameServers()
+        .then((servers) => {
+          getBestServer(servers as SocketAddress[])
+            .then((server) => {
+              axios
+                .post(`${endpoint}/sessions/allocate`, { name, server })
+                .then((res) => resolve(res))
+                .catch((err) => reject(err));
+            })
+            .catch((err) => reject(err));
+        })
+        .catch((err) => reject(err));
     });
   });
 };
@@ -31,12 +40,26 @@ export const deleteLobby = (id: string, ip: string, port: number) => {
   });
 };
 
-export const migrateLobby = (id: string, name: string) => {
+export const migrateLobby = (id: string, old: SocketAddress, name: string) => {
   return requestEndpoint().then((endpoint) => {
-    getGameServers().then((servers) => {
-      getBestServer(servers as SocketAddress[]).then((server) => {
-        return axios.post(`${endpoint}/sessions/migrate`, { id, name, server });
-      });
+    return new Promise((resolve, reject) => {
+      getGameServers()
+        .then((servers) => {
+          getBestServer(servers as SocketAddress[])
+            .then((server) => {
+              axios
+                .post(`${endpoint}/sessions/migrate`, {
+                  id,
+                  name,
+                  old,
+                  server,
+                })
+                .then((res) => resolve(res))
+                .catch((err) => reject(err));
+            })
+            .catch((err) => reject(err));
+        })
+        .catch((err) => reject(err));
     });
   });
 };

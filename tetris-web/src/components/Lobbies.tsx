@@ -27,7 +27,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
 
   const onNewLobby = (e: any) => {
     e.preventDefault();
-    createLobby(lobbyName).then((response) => {
+    createLobby(lobbyName).then((response: any) => {
       window.location.href = `/lobby/${response.data.id}`;
     });
   };
