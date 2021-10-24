@@ -125,12 +125,15 @@ def notifyLoadbalancer():
     for server in __lbServerDict.values():
         forwardpath = "loadbalancer/notify"
         endpoint = "http://" + str(server.getIp()) + ":" + str(server.getPort()) + "/" + forwardpath
-        servers = list(__apiServerDict.values())
-        content = jsonify(servers=servers)
+
+        servers = []
+        for s in __apiServerDict.values():
+            servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
 
         try:
-            response = requests.post(url=endpoint, json=content, headers=request.headers)
+            response = requests.post(url=endpoint, json={"servers": servers}, headers=request.headers)
         except Exception as e:
+            print(e)
             print("API Server list update at the Loadbalancer was unsuccessful ")
 
 
