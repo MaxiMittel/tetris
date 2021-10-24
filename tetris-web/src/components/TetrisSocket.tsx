@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { randomBlock } from "../tetris/blocks";
-import { ChatMessage, Colors, PlayerEntry } from "../types";
+import { ChatMessage, Colors, PlayerEntry, SocketAddress } from "../types";
 import { Tetris } from "./Tetris";
 import io from "socket.io-client";
 import { LobbyInfo } from "./LobbyInfo";
 import { useParams } from "react-router";
 import { deleteLobby, getLobby, migrateLobby } from "../api/lobby";
+import { updateUserStats } from "../api/account";
 
 const fieldSize = { x: 30, y: 20 };
 const username = localStorage.getItem("username") || "Jaqen H'ghar";
@@ -14,7 +15,6 @@ const id = localStorage.getItem("id") || "error_id" + Math.random();
 interface Props {}
 
 export const TetrisSocket: React.FC<Props> = (props: Props) => {
-  
   const { room } = useParams<any>();
 
   const initPlayer = {
@@ -26,17 +26,16 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
   const [player, setPlayer] = useState<PlayerEntry>(initPlayer);
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
-  const [field, setField] = useState(
-    generateEmptyField(fieldSize.x, fieldSize.y)
-  );
+  const [field, setField] = useState(genEmptyField(fieldSize.x, fieldSize.y));
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [playerReady, setPlayerReady] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [lobbyText, setLobbyText] = useState("Waiting for other players...");
-  const [socketAddress, setSocketAddress] =
-    useState<{ ip: string; port: number }>();
+  const [socketAddress, setSocketAddress] = useState<SocketAddress>();
   const [socket, setSocket] = useState<any>(null);
+  const startTime = useRef(0);
+  const blockFixCount = useRef(0);
 
   useEffect(() => {
     //Get the lobbys assigned game-server
@@ -49,7 +48,6 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     let newSocket: any;
 
     console.log("NEW SOCKET", socketAddress);
-    
 
     if (socketAddress) {
       newSocket = io(`ws://${socketAddress.ip}:${socketAddress.port}`);
@@ -58,7 +56,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     }
 
     return () => {
-      if(newSocket) {
+      if (newSocket) {
         newSocket.close();
       }
     };
@@ -99,7 +97,12 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
             console.log("DELETED");
             migrateLobby(room, "migrated-lobby").then((response) => {
-              console.log("MIGRATE", response, response.data.ip, response.data.port);
+              console.log(
+                "MIGRATE",
+                response,
+                response.data.ip,
+                response.data.port
+              );
               setSocketAddress({
                 ip: response.data.ip,
                 port: response.data.port,
@@ -143,12 +146,24 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
     socket.on("onGameStart", (response: any) => {
       setGameRunning(true);
+      startTime.current = Date.now();
     });
 
     socket.on("onGameOver", (response: any) => {
       setLobbyText(`Game over! Score: ${response.score}`);
       setGameOver(true);
       setGameRunning(false);
+
+      const passedTime = ((Date.now() - startTime.current)/1000)/60;
+      const blocksPerMinute = blockFixCount.current/passedTime;
+
+      const stats = {
+        bpm: blocksPerMinute,
+        score: response.score,
+        time: Date.now(),
+      };      
+
+      updateUserStats(stats);
       deleteLobby(room, socketAddress!.ip, socketAddress!.port);
     });
   }, [socket, room, socketAddress]);
@@ -159,6 +174,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       player.block = randomBlock(randInt(0, fieldSize.x - 4));
       return player;
     });
+    blockFixCount.current++;
     socket.emit("fieldUpdate", { room, field: newField });
   };
 
@@ -226,7 +242,7 @@ const randInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const generateEmptyField = (width: number, height: number) => {
+const genEmptyField = (width: number, height: number) => {
   let f = new Array<Colors[]>(fieldSize.y);
 
   for (var i = 0; i < f.length; i++) {

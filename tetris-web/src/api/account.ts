@@ -38,3 +38,16 @@ export const getAuthenticatedUser = () => {
     });
   });
 };
+
+export const updateUserStats = (gamescore: any) => {
+  return requestEndpoint().then((endpoint) => {
+    return axios.post(`${endpoint}/api/user/updateStats`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("auth")}`,
+      },
+      data: {
+        gamescore
+      }
+    });
+  });
+}
