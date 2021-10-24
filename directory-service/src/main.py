@@ -138,10 +138,15 @@ def remove_unresponsive(server_dict):
     """
     Remove unresponsive servers.
     """
-    for server in server_dict.values():
+    update_lb = False
+    for server in list(server_dict.values()):
         response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
         if response.status_code != 200:
+            update_lb = True
             server_dict.pop(server.getName(), None)
+
+    if update_lb:
+        notifyLoadbalancer()
 
 
 def heartbeat_thread():
