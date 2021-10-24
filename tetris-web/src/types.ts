@@ -53,4 +53,5 @@ export type ChatMessage = {
 export type SocketAddress = {
   ip: string;
   port: number;
+  ping?: number;
 };

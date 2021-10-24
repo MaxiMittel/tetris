@@ -96,7 +96,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
         if (socketAddress) {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
             console.log("DELETED");
-            migrateLobby(room, "migrated-lobby").then((response) => {
+            migrateLobby(id, socketAddress, "migrated lobby").then((response: any) => {
               console.log(
                 "MIGRATE",
                 response,

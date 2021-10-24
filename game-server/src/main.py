@@ -148,6 +148,9 @@ def migrate(data):
 
     sendAll('onMigrate', room, game[room].get_players())
 
+@app.route("/ping")
+def ping():
+    return "pong", 200
 
 """
 Send a message to all clients in a room

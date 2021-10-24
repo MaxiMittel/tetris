@@ -2,7 +2,6 @@ import requests
 import time
 from threading import Thread
 from util.metric import *
-import random
 from dotenv import load_dotenv, find_dotenv
 import os
 
@@ -14,47 +13,30 @@ def registerService(myIp, myPort, myName, myType):
     """
     Registers a server
     """
-    #Get load balancer
-    try:
-        endpoint = "http://" + os.environ.get("DIR_IP") + ":" + os.environ.get("DIR_PORT") + "/directory-service/getlb"
-        getResponse = requests.get(url= endpoint)
-        lbList = getResponse.json()
-        lb = random.choice(lbList["server"])
-        lbPath = "http://" + str(lb["ip"]) + ":" + str(lb["port"])
-    except Exception as e:
-        print("Exception when getting LB from DS: " + str(e))
-        return False
-
-    #Register at load balancer
-    try:
-        regmsg = {"ip": myIp, "port": myPort, "name": myName, "type": myType}
-        endpoint = lbPath + "/register"
-        postResponse = requests.post(url= endpoint, json= regmsg)
-        Thread(target=heartbeatTask, args=(myIp, myName, lbPath, True), daemon=True).start()
-    except Exception as e:
-        print("Exception when registering to LB: " + str(e))
-        return False
-
     #Register at Directory service
     try:
-        endpoint = "http://" + os.environ.get("DIR_IP") + ":" + os.environ.get("DIR_PORT") + "/directory-service/register" 
+        ip = os.environ.get("DIR_IP")
+        port = os.environ.get("DIR_PORT")
+        endpoint = "http://{}:{}/directory-service/register".format(ip, port) 
         content = {"ip": myIp, "port": myPort, "name": myName, "type": myType}
-        postResponse = requests.post(url= endpoint, json= content)
+        requests.post(url= endpoint, json= content)
+        Thread(target=heartbeatTask, args=(myIp, myName, True), daemon=True).start()
     except Exception as e:
         print("Exception when registering to DS: " + str(e))
         return False
 
 
-def heartbeatTask(myIp, myName, lbPath, isRegistered):
+def heartbeatTask(isRegistered):
     """
-    Send server metric to loadbalancer at even interval
+    Send server metric to directory service at even interval
     """
     while True:
         if isRegistered:
             try:
-                endpoint = lbPath + "/usage"
-                metric = calculateMetric(myIp, myName)
-                postResponse = requests.post(url= endpoint, json= metric)
+                ip = os.environ.get("DIR_IP")
+                port = os.environ.get("DIR_PORT")
+                endpoint = "http://{}:{}/directory-service/heartbeat".format(ip, port)
+                requests.post(url= endpoint)
                 
             except Exception as e:
                 print("exception")
