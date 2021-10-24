@@ -14,6 +14,9 @@ CORS(app)
 def index():
     return "Success! Service is running."
 
+@app.route("/ping")
+def ping():
+    return "pong", 200
 
 @app.route("/account/signup", methods=['POST'])
 def signup():
