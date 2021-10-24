@@ -45,7 +45,7 @@ export const migrateLobby = (id: string, old: SocketAddress, name: string) => {
     return new Promise((resolve, reject) => {
       getGameServers()
         .then((servers) => {
-          getBestServer(servers as SocketAddress[])
+          getBestServer(servers as SocketAddress[], old)
             .then((server) => {
               axios
                 .post(`${endpoint}/sessions/migrate`, {

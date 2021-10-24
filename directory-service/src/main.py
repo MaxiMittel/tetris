@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from serverObject import ServerObject as so
 from serverObject import serverObjectJSONEncoder as sOJE
+from threading import Thread
+import requests
+import time
 import sys
 
 app = Flask(__name__)
@@ -111,9 +114,34 @@ def __empty_check(content):
         return False
 
 
+def remove_unresponsive(server_dict):
+    """
+    Remove unresponsive servers.
+    """
+    for server in server_dict.values():
+        response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
+        if response.status_code != 200:
+            server_dict.pop(server.getName(), None)
+
+def heartbeat_thread():
+    """
+    Heartbeat thread.
+    """
+    while True:
+        #Check if game servers are alive
+        remove_unresponsive(__gameServerDict)
+        #Check if api servers are alive
+        remove_unresponsive(__apiServerDict)
+        #Check if lb servers are alive
+        remove_unresponsive(__lbServerDict)
+
+        time.sleep(1)
+        
+
 if __name__ == '__main__':
 
     if len(sys.argv) == 2:
+        Thread(target=heartbeat_thread, daemon=True).start()
         app.run(host='0.0.0.0', port=int(sys.argv[1]))
     else:
         print("Usage: python3 main.py <port>")

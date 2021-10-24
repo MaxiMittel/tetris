@@ -17,16 +17,26 @@ const pingAllServers = (servers: SocketAddress[]) => {
   return Promise.all(servers.map((server) => pingServer(server)));
 };
 
-export const getBestServer = (servers: SocketAddress[]) => {
+export const getBestServer = (
+  servers: SocketAddress[],
+  exclude?: SocketAddress
+) => {
   return pingAllServers(servers).then((servers) => {
     //Get all servers with a ping less than 100ms
-    const acceptableServer = servers
+    let acceptableServers = servers
       .sort((a: any, b: any) => a!.ping - b!.ping)
-      .filter((server: any) => server.ping && server.ping < 100);    
+      .filter((server: any) => server.ping && server.ping < 100);
+
+    if (exclude) {
+      acceptableServers = acceptableServers.filter(
+        (server: any) =>
+          server.ip !== exclude.ip && server.port !== exclude.port
+      );
+    }
 
     //Return random acceptable server
-    return acceptableServer[
-      Math.floor(Math.random() * acceptableServer.length)
+    return acceptableServers[
+      Math.floor(Math.random() * acceptableServers.length)
     ];
   });
 };
