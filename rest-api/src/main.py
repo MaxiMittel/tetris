@@ -150,10 +150,93 @@ def getAccount():
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
     return jsonify({"message": "Success"})
-    
+
+
+
+######## GAME SESSIONS BELOW ##########
+
+@app.route("/sessions/list", methods=['GET'])
+def getGameSessions():
+    """
+    Get list of all gamesessions
+    """
+    return dbGetGameSessions()
+
+
+@app.route("/sessions/allocate", methods=['POST'])
+def createGameSession():
+    """
+    Allocates for a new gamesession
+    """
+    try:
+        content = request.json
+        name = content["name"]
+        server = content["server"]
+        serverIp = server["ip"]
+        serverPort = server["port"]
+        
+        return dbAllocate(serverIp, serverPort, name)
+    except Exception as e:
+        return jsonify({"status": "error", "error": e.__class__.__name__})
+
+
+@app.route("/sessions/get", methods=['GET'])
+def getGameSession():
+    """
+    Get session by its uniqe id
+    """
+    id = request.args.get("id")
+    return dbGetSingleGameSession(id)
+
+
+@app.route("/sessions/delete", methods=['POST'])
+def deleteGameSession():
+    """
+    Deletes a game session
+    """
+    try:
+        content = request.json
+        sessionId = content["id"]
+        serverIp = content["ip"]
+        serverPort = content["port"]
+        response = dbGetSingleGameSession(sessionId)
+        result = response.json
+
+        if (serverIp == result["ip"] and serverPort == result["port"]):
+            return dbRemoveGameSession(sessionId)
+        else:
+            return jsonify({"status": "success", "error": "Did not delete session"})
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": e.__class__.__name__})
+
+
+@app.route("/sessions/migrate", methods=['POST'])
+def migrateSingleGameSession():
+    """ 
+    migrates a gamesession to a new game server
+    """
+    try:
+        content = request.json
+        sessionId = content["id"]
+        name = content["name"]
+        response = dbGetSingleGameSession(sessionId)
+        result = response.json
+        
+        if result["status"] == "error":
+            server = content["server"]
+            serverIp = server["ip"]
+            serverPort = server["port"]
+            return dbAllocate(serverIp, serverPort, name)
+        else:
+            return result
+
+    except Exception as e:
+        print(e)
+        return jsonify({"status": "error", "error": e.__class__.__name__})
+
 
 if __name__ == '__main__':
-
     if len(sys.argv) == 3:
         host = socket.gethostbyname(socket.gethostname())
         port = int(sys.argv[1])
