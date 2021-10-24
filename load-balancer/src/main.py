@@ -272,7 +272,7 @@ def dropNonresponsiveServers():
             """
             __gameServerDict.pop(server.getName())
 
-    for server in __apiServerDict.values:
+    for server in __apiServerDict.values():
 
         if (now - server.getLastContact()) > os.environ.get("TIMEOUT"):
             """
