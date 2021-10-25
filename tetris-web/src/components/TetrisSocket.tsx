@@ -10,7 +10,7 @@ import { updateUserStats } from "../api/account";
 
 const fieldSize = { x: 30, y: 20 };
 const username = localStorage.getItem("username") || "Jaqen H'ghar";
-const id = localStorage.getItem("id") || "error_id" + Math.random();
+const id = localStorage.getItem("userId") || "error_id" + Math.random();
 
 interface Props {}
 
@@ -96,19 +96,19 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
         if (socketAddress) {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
             console.log("DELETED");
-            migrateLobby(id, socketAddress, "migrated lobby").then((response: any) => {
+            migrateLobby(room, socketAddress, "migrated lobby").then((response: any) => {
               console.log(
                 "MIGRATE",
                 response,
-                response.data.ip,
-                response.data.port
+                response.data.server.ip,
+                response.data.server.port
               );
               setSocketAddress({
-                ip: response.data.ip,
-                port: response.data.port,
+                ip: response.data.server.ip,
+                port: response.data.server.port,
               });
-            });
-          });
+            }).catch((error: any) => console.log(error));
+          }).catch((error: any) => console.log(error));
         }
       }, Math.random() * 3000);
     });

@@ -29,7 +29,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
     e.preventDefault();
     createLobby(lobbyName).then((response: any) => {
       window.location.href = `/lobby/${response.data.id}`;
-    });
+    }).catch((error) => console.log(error));
   };
 
   return (

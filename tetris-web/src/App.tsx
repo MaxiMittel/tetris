@@ -23,11 +23,6 @@ function App() {
   const [isAuth, setAuth] = useState(true);
 
   useEffect(() => {
-    getBestServer([{ip: "127.0.0.1", port: 9000}]).then(server => {
-      console.log(server);
-    }).catch(err => {
-      console.log(err);
-    });
     isAuthenticated()
       .then((response) => {console.log(response); setAuth(response.data.message === "Success")})
       .catch(() => setAuth(false));

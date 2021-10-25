@@ -8,8 +8,7 @@ const pingServer = (server: SocketAddress) => {
       .get(`http://${server.ip}:${server.port}/ping`)
       .then(() => {
         resolve({ ...server, ping: Math.floor((Date.now() - start) / 10) });
-      })
-      .catch((err) => reject(err));
+      }).catch(() => resolve({ ...server, ping: undefined }));
   });
 };
 
@@ -22,17 +21,26 @@ export const getBestServer = (
   exclude?: SocketAddress
 ) => {
   return pingAllServers(servers).then((servers) => {
+
+    console.log("SERVERS", servers);
+    
+
     //Get all servers with a ping less than 100ms
     let acceptableServers = servers
       .sort((a: any, b: any) => a!.ping - b!.ping)
       .filter((server: any) => server.ping && server.ping < 100);
 
+    console.log("PRE", acceptableServers);
+    
+
     if (exclude) {
       acceptableServers = acceptableServers.filter(
         (server: any) =>
-          server.ip !== exclude.ip && server.port !== exclude.port
+          server.port !== exclude.port
       );
     }
+
+    console.log("ACCEPTABLE:", acceptableServers);
 
     //Return random acceptable server
     return acceptableServers[

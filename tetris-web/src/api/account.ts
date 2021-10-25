@@ -41,7 +41,7 @@ export const getAuthenticatedUser = () => {
 
 export const updateUserStats = (gamescore: any) => {
   return requestEndpoint().then((endpoint) => {
-    return axios.post(`${endpoint}/api/user/updateStats`, {
+    return axios.post(`${endpoint}/api/account/poststat`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("auth")}`,
       },

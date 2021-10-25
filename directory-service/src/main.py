@@ -36,6 +36,7 @@ def registerServer():
         elif content["type"] == "LB":
             lbso = so.makeServerObject(content["ip"], content["port"], content["name"])
             __lbServerDict[content["name"]] = lbso
+            notifyLoadbalancer()
 
         elif content["type"] == "API":
             apiso = so.makeServerObject(content["ip"], content["port"], content["name"])
@@ -122,16 +123,18 @@ def notifyLoadbalancer():
     """
     When the entries in the api dictionary changes, these changes are posted to the load balancer
     """
-    for server in __lbServerDict.values():
+    for server in list(__lbServerDict.values()):
         forwardpath = "loadbalancer/notify"
         endpoint = "http://" + str(server.getIp()) + ":" + str(server.getPort()) + "/" + forwardpath
 
         servers = []
-        for s in __apiServerDict.values():
+        for s in list(__apiServerDict.values()):
             servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
 
+        print(servers)
+
         try:
-            response = requests.post(url=endpoint, json={"servers": servers}, headers=request.headers)
+            requests.post(url=endpoint, json={"servers": servers}, headers=request.headers)
         except Exception as e:
             print(e)
             print("API Server list update at the Loadbalancer was unsuccessful ")
@@ -143,8 +146,13 @@ def remove_unresponsive(server_dict):
     """
     update_lb = False
     for server in list(server_dict.values()):
-        response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
-        if response.status_code != 200:
+
+        try:
+            response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
+            if response.status_code != 200:
+                update_lb = True
+                server_dict.pop(server.getName(), None)
+        except Exception as e:
             update_lb = True
             server_dict.pop(server.getName(), None)
 

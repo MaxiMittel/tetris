@@ -230,7 +230,7 @@ def dbAllocate(serverIp, serverPort, name):
         
         if result.acknowledged:
             gameSessionId = result.inserted_id
-            return jsonify({"status": "success", "id": str(gameSessionId)})
+            return jsonify({"status": "success", "id": str(gameSessionId), "server": {"ip": serverIp, "port": serverPort}})
         else:
             msg = "Operation not acknowledged"
             return jsonify({"status": "error", "error": msg})

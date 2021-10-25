@@ -17,7 +17,7 @@ class serverObject(object):
     
     def getPort(self):
         return self.__port
-    def setIp(self, port):
+    def setPort(self, port):
         self.__port = port
     
     def getName(self):

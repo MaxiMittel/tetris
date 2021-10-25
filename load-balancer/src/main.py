@@ -30,6 +30,8 @@ def updateServers():
     content = request.json
     servers = content["servers"]
 
+    print(servers)
+
     #If a server is in apiServerDict but not in update, remove it:
     for oldServer in list(apiServerDict.values()):
         if(not list(filter(lambda server: server['name'] == oldServer.getName(), servers))):
@@ -66,6 +68,8 @@ def forwardGetRequest(forwardpath):
     api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
+        print(api)
+        print(endpoint)
         
         try:
             start = time.time()
@@ -73,12 +77,13 @@ def forwardGetRequest(forwardpath):
             end = time.time()
             latency = end - start
             api.setMetric(latency)
-            return jsonify(response.json())
+            return jsonify(response.json()), response.status_code
             
         except Exception as e:
-            return jsonify({"status": "error"})
+            print(e)
+            return jsonify({"status": "error"}), 500
     else:
-        return jsonify({"status": "error"})
+        return jsonify({"status": "error"}), 500
 
 
 @app.route("/api/<path:forwardpath>", methods=['POST'])
@@ -90,6 +95,8 @@ def forwardPostRequest(forwardpath):
     api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
+        print(api)
+        print(endpoint)
 
         try:
             start = time.time()
@@ -97,13 +104,14 @@ def forwardPostRequest(forwardpath):
             end = time.time()
             latency = end - start
             api.setMetric(latency)
-            return jsonify(response.json())
+            return jsonify(response.json()), response.status_code
 
         except Exception as e:
-            return jsonify({"status": "error"})
+            print(e)
+            return jsonify({"status": "error"}), 500
 
     else:
-        return jsonify({"status": "error"})
+        return jsonify({"status": "error"}), 500
 
 
 

@@ -221,6 +221,7 @@ def migrateSingleGameSession():
     """
     try:
         content = request.json
+        print(content)
         sessionId = content["id"]
         name = content["name"]
         response = dbGetSingleGameSession(sessionId)
@@ -235,7 +236,7 @@ def migrateSingleGameSession():
             return result
 
     except Exception as e:
-        print(e)
+        print("ERROR:", e)
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
 
