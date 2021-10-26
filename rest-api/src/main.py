@@ -9,6 +9,24 @@ from util.serverHelper import *
 app = Flask(__name__)
 CORS(app)
 
+@app.before_first_request
+def reset_counter():
+    f = open("requestslog.txt", "w")
+    f.write(str(0))
+    f.close()
+
+@app.before_request
+def count_requests():
+    f = open("requestslog.txt", "r")
+    numb = f.read()
+    f.close()
+    f = open("requestslog.txt", "w")
+    if numb:
+        numb = int(numb) + 1
+    else:
+        numb = 1
+    f.write(str(numb))
+    f.close()
 
 @app.route("/")
 def index():
