@@ -1,0 +1,12 @@
+git clone https://github.com/MaxiMittel/tetris.git
+sudo apt update
+sudo apt install python3-pip
+pip3 install "Flask==1.1.4"
+pip3 install flask-cors
+pip3 install flask-script
+pip3 install flask-pymongo
+pip3 install python-dotenv
+usr/bin/python3 -m pip install "pymongo[srv]"
+pip3 install psutil
+pip3 install flask-socketio
+pip3 install simple-websocket

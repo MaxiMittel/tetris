@@ -11,7 +11,6 @@ import { Authenticated } from "./components/Authenticated";
 import { isAuthenticated } from "./api/account";
 import { TetrisSocket } from "./components/TetrisSocket";
 import { Search } from "./components/Search";
-import { getBestServer } from "./api/ping";
 
 function App() {
   const halfmoon = require("halfmoon");

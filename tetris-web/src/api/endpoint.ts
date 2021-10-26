@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const DIRECTORY_SERVICE = "http://localhost:7777"; //TODO: Replace with .env
+const DIRECTORY_SERVICE = "http://18.192.65.75:7777/";
 export var ENDPOINT = "";
 
 export const requestEndpoint = () => {
