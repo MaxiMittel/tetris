@@ -40,7 +40,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
           </div>
 
           <div className="lobby-scroll">
-            {lobbies.filter((lobby: Lobby) => lobby.name !== "migrated").map((lobby: Lobby, index: number) => (
+            {lobbies.map((lobby: Lobby, index: number) => (
               <LobbyItem
                 players={lobby.players}
                 lobbyName={lobby.name}

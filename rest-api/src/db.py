@@ -215,20 +215,19 @@ def dbGetGameSessions():
     try:
         sessions = []
         for doc in gameSession.find():
-            sessions.append({"id": str(doc["_id"]), "ip": doc["ip"], "port": doc["port"], "name": doc["name"]})
+            sessions.append({"id": doc["session_id"], "ip": doc["ip"], "port": doc["port"], "name": doc["name"]})
 
         return jsonify({"status": "success", "sessions": sessions})
     except Exception as e:
         return jsonify({"status": "error"})
 
 
-def dbAllocate(serverIp, serverPort, name):
+def dbAllocate(serverIp, serverPort, name, gameSessionId):
     try:
-        result = gameSession.insert_one({"ip": serverIp, "port": serverPort, "name": name})
+        result = gameSession.insert_one({"ip": serverIp, "port": serverPort, "name": name, "session_id": gameSessionId})
         
         if result.acknowledged:
-            gameSessionId = result.inserted_id
-            return jsonify({"status": "success", "id": str(gameSessionId), "server": {"ip": serverIp, "port": serverPort}})
+            return jsonify({"status": "success", "id": gameSessionId, "ip": serverIp, "port": serverPort, "name": name})
         else:
             msg = "Operation not acknowledged"
             return jsonify({"status": "error", "error": msg})
@@ -239,9 +238,9 @@ def dbAllocate(serverIp, serverPort, name):
 
 
 
-def dbRemoveGameSession(id):
+def dbRemoveGameSession(gameSessionId):
     try:
-        result = gameSession.delete_one({"_id": ObjectId(id)})
+        result = gameSession.delete_one({"session_id": gameSessionId})
         
         if result.deleted_count == 1:
             return jsonify({"status": "success"})
@@ -259,7 +258,7 @@ def dbGetSingleGameSession(gameSessionId):
     Returns ip for gamesession if the game session is in the db
     """
     try:
-        result  = gameSession.find_one( {"_id": ObjectId(gameSessionId) })
+        result  = gameSession.find_one( {"session_id": gameSessionId })
         if result:
             return jsonify({"status": "success", "ip": result["ip"], "port": result["port"], "name": result["name"]})
         else:

@@ -32,6 +32,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   const [gameRunning, setGameRunning] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [lobbyText, setLobbyText] = useState("Waiting for other players...");
+  const [lobbyName, setLobbyName] = useState("");
   const [socketAddress, setSocketAddress] = useState<SocketAddress>();
   const [socket, setSocket] = useState<any>(null);
   const startTime = useRef(0);
@@ -41,6 +42,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     //Get the lobbys assigned game-server
     getLobby(room).then((response) => {
       setSocketAddress({ ip: response.data.ip, port: response.data.port });
+      setLobbyName(response.data.name);
     });
   }, [room]);
 
@@ -88,16 +90,17 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
         if (socketAddress) {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
             console.log("DELETED");
-            migrateLobby(room, socketAddress, "migrated").then((response: any) => {
+            migrateLobby(room, socketAddress, lobbyName).then((response: any) => {
+              console.log("MIGRATED", response);
               console.log(
                 "MIGRATE",
                 response,
-                response.data.server.ip,
-                response.data.server.port
+                response.data.ip,
+                response.data.port
               );
               setSocketAddress({
-                ip: response.data.server.ip,
-                port: response.data.server.port,
+                ip: response.data.ip,
+                port: response.data.port,
               });
             }).catch((error: any) => console.log(error));
           }).catch((error: any) => console.log(error));
@@ -160,7 +163,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
       updateUserStats(stats);
       deleteLobby(room, socketAddress!.ip, socketAddress!.port);
     });
-  }, [socket, room, socketAddress]);
+  }, [socket, room, socketAddress, lobbyName]);
 
   const onBlockFix = (newField: Colors[][]) => {
     setField(newField);

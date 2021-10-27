@@ -8,6 +8,7 @@ import multiprocessing
 import directory
 import time
 import math
+import hashlib
 
 app = Flask(__name__)
 CORS(app)
@@ -203,8 +204,11 @@ def createGameSession():
         server = content["server"]
         serverIp = server["ip"]
         serverPort = server["port"]
+
+        # Generate random id
+        session_id = hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()
         
-        return dbAllocate(serverIp, serverPort, name)
+        return dbAllocate(serverIp, serverPort, name, session_id)
     except Exception as e:
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
@@ -247,7 +251,6 @@ def migrateSingleGameSession():
     """
     try:
         content = request.json
-        print(content)
         sessionId = content["id"]
         name = content["name"]
         response = dbGetSingleGameSession(sessionId)
@@ -257,7 +260,7 @@ def migrateSingleGameSession():
             server = content["server"]
             serverIp = server["ip"]
             serverPort = server["port"]
-            return dbAllocate(serverIp, serverPort, name)
+            return dbAllocate(serverIp, serverPort, name, sessionId)
         else:
             return result
 
