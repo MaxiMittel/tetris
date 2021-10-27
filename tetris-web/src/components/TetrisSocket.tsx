@@ -62,24 +62,16 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     };
   }, [socketAddress]);
 
-  /**
-   * Join the room
-   */
-  useEffect(() => {
-    if (socket) {
-      console.log("Joining room");
-      socket.emit("join", { room, username: username, id: id });
-    }
-  }, [socket, room]);
-
   useEffect(() => {
     if (socket) {
       socket.on("connect", () => {
         console.log("Connected to server");
         if (players.length !== 0) {
-          console.log("Sending players");
+          console.log("SENDING PLAYERS");
           socket.emit("migrate", { room, field, players });
         }
+        console.log("JOIN");
+        socket.emit("join", { room, username: username, id: id });
       });
     }
   }, [socket, players, field, room]);
@@ -96,7 +88,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
         if (socketAddress) {
           deleteLobby(room, socketAddress.ip, socketAddress.port).then(() => {
             console.log("DELETED");
-            migrateLobby(room, socketAddress, "migrated lobby").then((response: any) => {
+            migrateLobby(room, socketAddress, "migrated").then((response: any) => {
               console.log(
                 "MIGRATE",
                 response,
@@ -115,7 +107,10 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
     // New player joins
     socket.on("onJoin", (response: any) => {
-      setPlayers(response);
+      setPlayers(response.players);
+      if(response.field.length !== 0) {        
+        setField(response.field);
+      }
     });
 
     // New player joins
@@ -135,7 +130,6 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
 
     // Chat message
     socket.on("onChatMessage", (response: any) => {
-      console.log("Message received");
       setChatMessages((messages) => [...messages, response.message]);
     });
 
@@ -178,7 +172,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
     socket.emit("fieldUpdate", { room, field: newField });
   };
 
-  const onPlayerMove = (newPlayer: PlayerEntry) => {
+  const onPlayerMove = (newPlayer: PlayerEntry) => {    
     setPlayer(newPlayer);
     socket.emit("playerUpdate", {
       room,
@@ -188,7 +182,6 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
   };
 
   const sendChatMessage = (message: ChatMessage) => {
-    console.log("message");
     socket.emit("chatMessage", { room, msg: message });
   };
 

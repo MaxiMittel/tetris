@@ -21,6 +21,12 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 game = {} # {room: GameState}
 clients = {} # {sid: room}
 
+def printGames():
+    for room in game:
+        print("ROOM", room)
+        for player in game[room].get_players():
+            print(player)
+
 """
 Client joins a room
 """
@@ -35,11 +41,13 @@ def join(data):
     clients[sid] = room
 
     if room not in game:
-        game[room] = GameState()
+        game[room] = GameState([], [])
 
     game[room].add_player(username, id, sid)
 
-    sendAll('onJoin', room, game[room].get_players())
+    printGames()
+
+    sendAll('onJoin', room, {"players": game[room].get_players(), "field": game[room].get_field()})
 
 """
 Client disconnects
@@ -146,7 +154,8 @@ def migrate(data):
     gameField = data['field']
     players = data['players']
 
-    game[room] = GameState(gameField, players)
+    if room not in game:
+        game[room] = GameState(players, gameField)
 
     sendAll('onMigrate', room, game[room].get_players())
 

@@ -263,7 +263,7 @@ def dbGetSingleGameSession(gameSessionId):
     try:
         result  = gameSession.find_one( {"_id": ObjectId(gameSessionId) })
         if result:
-            return jsonify({"status": "success", "ip": result["ip"], "port": result["port"]})
+            return jsonify({"status": "success", "ip": result["ip"], "port": result["port"], "name": result["name"]})
         else:
             return jsonify({"status": "error"})  
 

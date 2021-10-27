@@ -1,9 +1,9 @@
 class GameState:
 
-    def __init__(self):
+    def __init__(self, players, field):
         self.clients = []
-        self.players = []
-        self.gameField = []
+        self.players = players
+        self.gameField = field
         self.score = 0
 
     def add_player(self, username, id, sid):
@@ -43,6 +43,9 @@ class GameState:
 
     def set_field(self, field):
         self.gameField = field
+
+    def get_field(self):
+        return self.gameField
 
     def get_players(self):
         return self.players

@@ -10,7 +10,6 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
 
   useEffect(() => {
     getLobbies().then((response) => {
-      console.log(response.data.sessions);
       setLobbies(response.data.sessions);
     });
   }, []);
@@ -41,7 +40,7 @@ export const Lobbies: React.FC<Props> = (props: Props) => {
           </div>
 
           <div className="lobby-scroll">
-            {lobbies.map((lobby: Lobby, index: number) => (
+            {lobbies.filter((lobby: Lobby) => lobby.name !== "migrated").map((lobby: Lobby, index: number) => (
               <LobbyItem
                 players={lobby.players}
                 lobbyName={lobby.name}
