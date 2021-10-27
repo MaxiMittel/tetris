@@ -146,26 +146,24 @@ def dbUpdateUser(userID, newUsername):
 
 
 def dbPostStat(userID, stat):
-    if(userID != False):
-        try:
-            filter = {"_id": ObjectId(userID["id"])}
-            potentialHighscore = stat["score"]
-            update = {"$push": {"stats": stat}, "$max": {"highscore": potentialHighscore}}
-            result = userData.update_one(filter, update)
+    try:
+        filter = {"_id": ObjectId(userID)}
+        potentialHighscore = stat["score"]
+        update = {"$push": {"stats": stat}, "$max": {"highscore": potentialHighscore}}
+        result = userData.update_one(filter, update)
 
-            if (result.modified_count > 0):
-                return jsonify({"status": "success"})
-            else:
-                msg = "Failed to post update"
-                return jsonify({"status": "error", "error": msg}), 400
+        if (result.modified_count > 0):
+            return jsonify({"status": "success"})
+        else:
+            msg = "Failed to post update"
+            return jsonify({"status": "error", "error": msg}), 400
 
-        except OperationFailure:
-            return jsonify({"status": "error", "error": "Operation Failure"}), 500
+    except OperationFailure:
+        return jsonify({"status": "error", "error": "Operation Failure"}), 500
 
-        except Exception as e:
-            return jsonify({"status": "error", "error": e.__class__.__name__}), 500
-    else:
-        return jsonify({"status": "error", "error": "Incorrect authentication"}), 403
+    except Exception as e:
+        print(e)
+        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
         
         
 

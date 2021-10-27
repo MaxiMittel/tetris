@@ -21,17 +21,17 @@ export const Account: React.FC<Props> = (props: Props) => {
       .then((repsonse: any) => {
         const userInfo = repsonse.data;
         setUsername(userInfo.username);
-        setHighscore(userInfo.highscore);
+        setHighscore(userInfo.highscore);        
 
         if (userInfo.stats.length > 0) {
           setHsData(
-            generateDiagramData(
+            generateDiagramData("Highscore",
               userInfo.stats.map((game: any) => game.score),
               "#D11149"
             )
           );
           setBpmData(
-            generateDiagramData(
+            generateDiagramData("Blocks per minute",
               userInfo.stats.map((game: any) => game.bpm),
               "#6610F2"
             )
@@ -58,7 +58,7 @@ export const Account: React.FC<Props> = (props: Props) => {
           </div>
           <div className="card">
             <h2 className="card-title">Blocks per minute</h2>
-            {bpmData && <Line data={hsData} options={chartOptions} />}
+            {bpmData && <Line data={bpmData} options={chartOptions} />}
             {!bpmData && <p>No bpm data</p>}
           </div>
         </div>
@@ -68,7 +68,7 @@ export const Account: React.FC<Props> = (props: Props) => {
 };
 
 // Generate a data object for the chart
-const generateDiagramData = (data: any[], color: string) => {
+const generateDiagramData = (label: string, data: any[], color: string) => {
   if (data.length === 0) {
     return undefined;
   }
@@ -77,7 +77,7 @@ const generateDiagramData = (data: any[], color: string) => {
     labels: ["-", "-", "-", "-", "-", "-", "-"],
     datasets: [
       {
-        label: "Highscores",
+        label,
         data,
         fill: true,
         borderColor: color,
