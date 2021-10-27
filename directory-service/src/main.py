@@ -123,7 +123,6 @@ def remove_unresponsive(server_dict):
     """
     update_lb = False
     for server in list(server_dict.values()):
-
         try:
             response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
             if response.status_code != 200:
