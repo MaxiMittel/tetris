@@ -74,6 +74,11 @@ def forwardGetRequest(forwardpath):
             end = time.time()
             latency = end - start
             api.setMetric(latency)
+
+            # Write to log file
+            with open("request_log.csv", 'a+') as f:
+                f.write(str(latency) + "," + str(api.getName()) + "," + str(request.method) + "," + str(request.path) + "\n")
+
             return jsonify(response.json()), response.status_code
             
         except Exception as e:
@@ -99,6 +104,11 @@ def forwardPostRequest(forwardpath):
             end = time.time()
             latency = end - start
             api.setMetric(latency)
+
+            # Write to log file
+            with open("request_log.csv", 'a+') as f:
+                f.write(str(latency) + "," + str(api.getName()) + "," + str(request.method) + "," + str(request.path) + "\n")
+                
             return jsonify(response.json()), response.status_code
 
         except Exception as e:
