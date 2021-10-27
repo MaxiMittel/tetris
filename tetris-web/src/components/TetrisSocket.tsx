@@ -102,7 +102,7 @@ export const TetrisSocket: React.FC<Props> = (props: Props) => {
             }).catch((error: any) => console.log(error));
           }).catch((error: any) => console.log(error));
         }
-      }, Math.random() * 3000);
+      }, Math.random() * 1000);
     });
 
     // New player joins

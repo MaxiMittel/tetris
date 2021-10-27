@@ -7,6 +7,7 @@ import sys
 import multiprocessing
 import directory
 import time
+import math
 
 app = Flask(__name__)
 CORS(app)
@@ -56,9 +57,12 @@ def getUser():
     Returns the account informations of the logged in user.
     """
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+    
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
@@ -71,9 +75,12 @@ def getUserById():
     usage example: /user/getbyid?id=616f1a742c1a8f9f3f6588a6
     """
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+    
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
@@ -87,9 +94,12 @@ def update():
     Updates the current users username.
     """
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+    
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
@@ -108,9 +118,12 @@ def postStat():
     Post the result of one game
     """
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+    
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
@@ -130,9 +143,12 @@ def search():
     Search for other users.
     """
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+    
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
 
@@ -146,15 +162,24 @@ def search():
 
 
 @app.route("/account/isAuthenticated")
-def getAccount():
+def isAuthenticated():
     token = request.headers.get("Authorization")
-    token = token.replace("Bearer ", "")
+    
     if not token:
         return jsonify({"error": "No token provided"}), 401
+
+    token = token.replace("Bearer ", "")
+
     if not verify_jwt(token):
         return jsonify({"error": "Invalid token"}), 401
     return jsonify({"message": "Success"})
 
+@app.route("/test")
+def test():
+    #Random delay
+    time.sleep(math.random() * 1)
+
+    return "test", 200
 
 
 ######## GAME SESSIONS BELOW ##########
