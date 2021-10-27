@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from serverObject import ServerObject as so
-from serverObject import serverObjectJSONEncoder as sOJE
+from server_object import ServerObject as so
+from server_object import serverObjectJSONEncoder as sOJE
 from threading import Thread
 import requests
 import time
@@ -29,18 +29,20 @@ def registerServer():
     content = request.json
     if __empty_check(content):
 
+        key = "{}:{}".format( content["ip"], content["port"])
+
         if content["type"] == "GS":
             gso = so.makeServerObject(content["ip"], content["port"], content["name"])
-            __gameServerDict[content["name"]] = gso
+            __gameServerDict[key] = gso
 
         elif content["type"] == "LB":
             lbso = so.makeServerObject(content["ip"], content["port"], content["name"])
-            __lbServerDict[content["name"]] = lbso
+            __lbServerDict[key] = lbso
             notifyLoadbalancer()
 
         elif content["type"] == "API":
             apiso = so.makeServerObject(content["ip"], content["port"], content["name"])
-            __apiServerDict[content["name"]] = apiso
+            __apiServerDict[key] = apiso
             notifyLoadbalancer()
 
         else:
@@ -50,27 +52,6 @@ def registerServer():
 
     else:
         return jsonify({"status": "error"})
-
-
-@app.route("/directory-service/unregister/<id>", methods=['DELETE'])
-def unregisterServer(id):
-    """
-    Unregister a GameServer/ApiServer/LbServer from the Directory Service.
-    """
-    if id in __gameServerDict.keys():
-        __gameServerDict.pop(id)
-        return jsonify({"status": "success"})
-
-    elif id in __lbServerDict.keys():
-        __lbServerDict.pop(id)
-        return jsonify({"status": "success"})
-
-    elif id in __apiServerDict.keys():
-        __apiServerDict.pop(id)
-        notifyLoadbalancer()
-        return jsonify({"status": "success"})
-
-    return jsonify({"status": "error"})
 
 
 @app.route("/directory-service/getgs", methods=['GET'])
@@ -118,7 +99,6 @@ def __empty_check(content):
     else:
         return False
 
-
 def notifyLoadbalancer():
     """
     When the entries in the api dictionary changes, these changes are posted to the load balancer
@@ -131,13 +111,10 @@ def notifyLoadbalancer():
         for s in list(__apiServerDict.values()):
             servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
 
-        print(servers)
-
         try:
-            requests.post(url=endpoint, json={"servers": servers}, headers=request.headers)
+            requests.post(url=endpoint, json={"servers": servers})
         except Exception as e:
-            print(e)
-            print("API Server list update at the Loadbalancer was unsuccessful ")
+            app.logger.error(e)
 
 
 def remove_unresponsive(server_dict):
@@ -151,10 +128,13 @@ def remove_unresponsive(server_dict):
             response = requests.get("http://{}:{}/ping".format(server.getIp(), server.getPort()))
             if response.status_code != 200:
                 update_lb = True
-                server_dict.pop(server.getName(), None)
+                key = "{}:{}".format(server.getIp(), server.getPort())
+                server_dict.pop(key, None)
         except Exception as e:
+            app.logger.error(e)
             update_lb = True
-            server_dict.pop(server.getName(), None)
+            key = "{}:{}".format(server.getIp(), server.getPort())
+            server_dict.pop(key, None)
 
     if update_lb:
         notifyLoadbalancer()

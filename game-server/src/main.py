@@ -2,10 +2,12 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from game_state import GameState
+import directory
 import socket
-from util.serverHelper import *
 import sys
 from dotenv import load_dotenv, find_dotenv
+import multiprocessing
+import time
 import os
 
 load_dotenv(find_dotenv())
@@ -159,6 +161,8 @@ def sendAll(action, room, message):
     for client in game[room].get_clients():
         emit(action, message, room=client)
 
+def Server(host,port):
+    socketio.run(app, host=host, port=port)
 
 if __name__ == '__main__':
 
@@ -167,8 +171,17 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
         name = sys.argv[2]
 
-        registerService(host, port, name, "GS")
-        socketio.run(app, port=port, debug=True)
+        server_process = multiprocessing.Process(target=Server, args=(host, port))
+        server_process.start()
+
+        # Wait 2 seconds then try until registration was successful
+        time.sleep(2)
+        is_Registered = directory.registerService(host, port, name, "GS")
+        while not is_Registered:
+            app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
+            time.sleep(2)
+            is_Registered = directory.registerService(host, port, name, "GS")
+        app.logger.info("Connection to directory service was successfull")
     else:
         print("Usage: python main.py <port> <name>")
         exit()

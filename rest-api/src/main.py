@@ -1,32 +1,15 @@
 from flask import Flask, request
 from flask_cors import CORS
-from flask_script import Manager, Server
+from flask_script import Server
 from db import *
 import socket
 import sys
-from util.serverHelper import *
+import multiprocessing
+import directory
+import time
 
 app = Flask(__name__)
 CORS(app)
-
-@app.before_first_request
-def reset_counter():
-    f = open("requestslog.txt", "w")
-    f.write(str(0))
-    f.close()
-
-@app.before_request
-def count_requests():
-    f = open("requestslog.txt", "r")
-    numb = f.read()
-    f.close()
-    f = open("requestslog.txt", "w")
-    if numb:
-        numb = int(numb) + 1
-    else:
-        numb = 1
-    f.write(str(numb))
-    f.close()
 
 @app.route("/")
 def index():
@@ -257,6 +240,8 @@ def migrateSingleGameSession():
         print("ERROR:", e)
         return jsonify({"status": "error", "error": e.__class__.__name__})
 
+def Server(host, port):
+   app.run(host=host, port=port,)
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
@@ -264,8 +249,18 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
         name = sys.argv[2]
 
-        registerService(host, port, name, "API")
-        app.run(host=host, port=port, debug=False)
+        server_process = multiprocessing.Process(target=Server, args=(host, port))
+        server_process.start()
+
+        # Wait 2 seconds then try until registration was successful
+        time.sleep(2)
+        is_Registered = directory.registerService(host, port, name, "API")
+        while not is_Registered:
+            app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
+            time.sleep(2)
+            is_Registered = directory.registerService(host, port, name, "API")
+
+        app.logger.info("Connection to directory service was successfull")
     else:
         print("Usage: python main.py <port> <name>")
         exit()

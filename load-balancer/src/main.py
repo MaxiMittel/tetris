@@ -2,13 +2,14 @@ from math import e
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
-from requests import api
-from serverObject import serverObject as so
+from server_object import serverObject as so
 import socket
 import time
-import os
 import sys
 from dotenv import load_dotenv, find_dotenv
+import multiprocessing
+import directory
+
 
 load_dotenv(find_dotenv())
 
@@ -29,8 +30,6 @@ def ping():
 def updateServers():
     content = request.json
     servers = content["servers"]
-
-    print(servers)
 
     #If a server is in apiServerDict but not in update, remove it:
     for oldServer in list(apiServerDict.values()):
@@ -68,8 +67,6 @@ def forwardGetRequest(forwardpath):
     api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
-        print(api)
-        print(endpoint)
         
         try:
             start = time.time()
@@ -80,7 +77,7 @@ def forwardGetRequest(forwardpath):
             return jsonify(response.json()), response.status_code
             
         except Exception as e:
-            print(e)
+            app.logger.error(e)
             return jsonify({"status": "error"}), 500
     else:
         return jsonify({"status": "error"}), 500
@@ -95,8 +92,6 @@ def forwardPostRequest(forwardpath):
     api = pickLeastLoadedApiServer()
     if api:
         endpoint = "http://" + str(api.getIp()) + ":" + str(api.getPort()) + "/" + forwardpath
-        print(api)
-        print(endpoint)
 
         try:
             start = time.time()
@@ -107,7 +102,7 @@ def forwardPostRequest(forwardpath):
             return jsonify(response.json()), response.status_code
 
         except Exception as e:
-            print(e)
+            app.logger.error(e)
             return jsonify({"status": "error"}), 500
 
     else:
@@ -132,19 +127,10 @@ def pickLeastLoadedApiServer():
             server = key
     return apiServerDict.get(server)
 
-
-def registerAtDirectoryService(myIp, myPort, myName):
-    try:
-        content = {"ip": myIp, "port": myPort, "name": myName , "type": "LB"}
-        endpoint = "http://" + os.environ.get("DIR_IP") + ":" + os.environ.get("DIR_PORT") + "/directory-service/register"
-        response = requests.post(url= endpoint, json= content)
-        resp = response.json()
-        return resp
-
-    except Exception as e:
-        print("1. Error of type " + e.__class__.__name__ + " occured.")
-        return False
     
+def Server(host, port):
+   app.run(host=host, port=port,)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
@@ -152,8 +138,19 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
         name = sys.argv[2]
 
-        registerAtDirectoryService(host, port, name)
-        app.run(host=host, port=port, debug=False)
+        server_process = multiprocessing.Process(target=Server, args=(host, port))
+        server_process.start()
+
+        # Wait 2 seconds then try until registration was successful
+        time.sleep(2)
+        is_Registered = directory.registerService(host, port, name, "LB")
+        while not is_Registered:
+            app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
+            time.sleep(2)
+            is_Registered = directory.registerService(host, port, name, "LB")
+
+        app.logger.info("Connection to directory service was successfull")
+        
     else:
         print("Usage: python main.py <port> <name>")
         exit()
