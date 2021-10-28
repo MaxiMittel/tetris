@@ -233,7 +233,7 @@ def deleteGameSession():
         serverIp = content["ip"]
         serverPort = content["port"]
         response = dbGetSingleGameSession(sessionId)
-        result = response.json
+        result = json.loads(response)
 
         if (serverIp == result["ip"] and serverPort == result["port"]):
             return dbRemoveGameSession(sessionId)
@@ -249,24 +249,24 @@ def migrateSingleGameSession():
     """ 
     migrates a gamesession to a new game server
     """
-    try:
-        content = request.json
-        sessionId = content["id"]
-        name = content["name"]
-        response = dbGetSingleGameSession(sessionId)
-        result = response.json
-        
-        if result["status"] == "error":
-            server = content["server"]
-            serverIp = server["ip"]
-            serverPort = server["port"]
-            return dbAllocate(serverIp, serverPort, name, sessionId)
-        else:
-            return result
+    #try:
+    content = request.json
+    sessionId = content["id"]
+    name = content["name"]
+    response = dbGetSingleGameSession(sessionId)
+    result = json.loads(response)
+    
+    if result["status"] == "error":
+        server = content["server"]
+        serverIp = server["ip"]
+        serverPort = server["port"]
+        return dbAllocate(serverIp, serverPort, name, sessionId)
+    else:
+        return result
 
-    except Exception as e:
-        print("ERROR:", e)
-        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
+    #except Exception as e:
+        #print("ERROR:", e)
+        #return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
 
 def Server(host, port):
    app.run(host=host, port=port,)
@@ -281,14 +281,14 @@ if __name__ == '__main__':
         server_process.start()
 
         # Wait 2 seconds then try until registration was successful
-        time.sleep(2)
-        is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
-        while not is_Registered:
-            app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
-            time.sleep(2)
-            is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
+        #time.sleep(2)
+        #is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
+        #while not is_Registered:
+            #app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
+            #time.sleep(2)
+            #is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
 
-        app.logger.info("Connection to directory service was successfull")
+        #app.logger.info("Connection to directory service was successfull")
     else:
         print("Usage: python main.py <port> <name>")
         exit()
