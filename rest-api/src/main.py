@@ -34,7 +34,7 @@ def signup():
         return dbSignup(newAccount, username)
     else:
         msg = "No arguements passed"
-        return jsonify({"status": "error", "error": msg})
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
 
 @app.route("/account/signin", methods=['POST'])
@@ -49,7 +49,7 @@ def signin():
         return dbSignin(username, enteredPassword)
     else:
         msg = "No arguements(json) passed"
-        return jsonify({"status": "error", "error": msg})
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
 
 @app.route("/user/get", methods=['GET'])
@@ -60,12 +60,12 @@ def getUser():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
     
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
 
     return dbFindUserById(decode_jwt(token)["id"])
 
@@ -78,12 +78,12 @@ def getUserById():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
     
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
 
     id = request.args.get("id")
     return dbFindUserById(id)
@@ -97,12 +97,12 @@ def update():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
     
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
 
     content = request.json
     if (content):
@@ -110,7 +110,7 @@ def update():
         return dbUpdateUser(decode_jwt(token)["id"], newUsername)
     else:
         msg = "No arguements passed"
-        return jsonify({"status": "error", "error": msg, "username": "", "auth": ""})
+        return json.dumps({"status": "error", "error": msg, "username": "", "auth": ""}, ensure_ascii=False)
 
 
 @app.route("/account/poststat", methods=['POST'])
@@ -121,12 +121,12 @@ def postStat():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
     
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
 
     content = request.json
     if (content):
@@ -135,7 +135,7 @@ def postStat():
         return dbPostStat(userID, stat)
     else:
         msg = "No arguements passed"
-        return jsonify({"status": "error", "error": msg})
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False)
 
 
 @app.route("/user/search", methods=['GET'])
@@ -146,12 +146,12 @@ def search():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
     
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
 
     content = request.args
     if (content):
@@ -159,7 +159,7 @@ def search():
         return dbFindUsers(search)
     else:
         msg = "No arguements passed"
-        return jsonify({"status": "error", "error": msg})
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False)
 
 
 @app.route("/account/isAuthenticated")
@@ -167,13 +167,13 @@ def isAuthenticated():
     token = request.headers.get("Authorization")
     
     if not token:
-        return jsonify({"error": "No token provided"}), 401
+        return json.dumps({"error": "No token provided"}, ensure_ascii=False), 401
 
     token = token.replace("Bearer ", "")
 
     if not verify_jwt(token):
-        return jsonify({"error": "Invalid token"}), 401
-    return jsonify({"message": "Success"})
+        return json.dumps({"error": "Invalid token"}, ensure_ascii=False), 401
+    return json.dumps({"message": "Success"}, ensure_ascii=False)
 
 @app.route("/test")
 def test():
@@ -210,7 +210,7 @@ def createGameSession():
         
         return dbAllocate(serverIp, serverPort, name, session_id)
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__})
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False)
 
 
 @app.route("/sessions/get", methods=['GET'])
@@ -238,10 +238,10 @@ def deleteGameSession():
         if (serverIp == result["ip"] and serverPort == result["port"]):
             return dbRemoveGameSession(sessionId)
         else:
-            return jsonify({"status": "success", "error": "Did not delete session"})
+            return json.dumps({"status": "success", "error": "Did not delete session"}, ensure_ascii=False)
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__})
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False)
 
 
 @app.route("/sessions/migrate", methods=['POST'])
@@ -266,7 +266,7 @@ def migrateSingleGameSession():
 
     except Exception as e:
         print("ERROR:", e)
-        return jsonify({"status": "error", "error": e.__class__.__name__})
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
 
 def Server(host, port):
    app.run(host=host, port=port,)

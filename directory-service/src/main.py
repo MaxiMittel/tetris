@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_cors import CORS
 from server_object import ServerObject as so
 from server_object import serverObjectJSONEncoder as sOJE
@@ -6,6 +6,7 @@ from threading import Thread
 import requests
 import time
 import sys
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -46,12 +47,12 @@ def registerServer():
             notifyLoadbalancer()
 
         else:
-            return jsonify({"status": "error"})
+            return json.dumps({"status": "error"}, ensure_ascii=False), 500
 
-        return jsonify({"status": "success"})
+        return json.dumps({"status": "success"}, ensure_ascii=False), 200
 
     else:
-        return jsonify({"status": "error"})
+        return json.dumps({"status": "error"}, ensure_ascii=False), 500
 
 
 @app.route("/directory-service/getgs", methods=['GET'])
@@ -63,7 +64,7 @@ def getGameServer():
     A list with all registered services
     """
     servers = list(__gameServerDict.values())
-    return jsonify(server=servers)
+    return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
 @app.route("/directory-service/getapi", methods=['GET'])
@@ -75,7 +76,7 @@ def getApiServer():
     A list with all registered api services
     """
     servers = list(__apiServerDict.values())
-    return jsonify(server=servers)
+    return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
 @app.route("/directory-service/getlb", methods=['GET'])
@@ -87,7 +88,7 @@ def getLoadBalancer():
     A list with all registered load balancers
     """
     servers = list(__lbServerDict.values())
-    return jsonify(server=servers)
+    return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
 ### Private methods below ###

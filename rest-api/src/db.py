@@ -1,4 +1,3 @@
-from flask import jsonify
 from flask_pymongo import pymongo
 from pymongo.errors import DuplicateKeyError, OperationFailure
 from bson.json_util import dumps
@@ -54,28 +53,28 @@ def dbSignup(newAccount, username):
 
     except Exception as e:
         msg = "Could not create unique value"
-        return jsonify({"status": "error", "error": msg}), 500
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
     try:
         result  = userData.insert_one(newAccount)
         
         if result.acknowledged:
             token = encode_jwt({"id": str(result.inserted_id)})
-            return jsonify({"status": "success", "id": str(result.inserted_id), "auth": token, "username": username})
+            return json.dumps({"status": "success", "id": str(result.inserted_id), "auth": token, "username": username}, ensure_ascii=False)
         else:
             msg = "Operation not acknowledged"
-            return jsonify({"status": "error", "error": msg}), 500
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
     except DuplicateKeyError:
         msg = "Duplicate key/username"
-        return jsonify({"status": "error", "error": msg}), 400
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 400
 
     except OperationFailure:
         msg = "Operation failure"
-        return jsonify({"status": "error", "error": msg}), 500
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
 
 
 
@@ -85,19 +84,19 @@ def dbSignin(username, enteredPassword):
         result = userData.find_one({"username": username}, projection)
         if(result):
             if result["password"] != enteredPassword:
-                return jsonify({"status": "error", "error": "Wrong password"}), 403
+                return json.dumps({"status": "error", "error": "Wrong password"}, ensure_ascii=False), 403
             else:
                 token = encode_jwt({"id": str(result["_id"])})
-                return jsonify({"status": "success", "id": str(result["_id"]), "auth": token, "username": result["username"]})
+                return json.dumps({"status": "success", "id": str(result["_id"]), "auth": token, "username": result["username"]}, ensure_ascii=False)
         else:
-           return jsonify({"status": "error", "error": "User not found"}), 404
+           return json.dumps({"status": "error", "error": "User not found"}, ensure_ascii=False), 404
 
     except OperationFailure:
         msg = "Operation failure"
-        return jsonify({"status": "error", "error": msg}), 500
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
 
 
 
@@ -106,17 +105,17 @@ def dbGetUser(userID):
         if(userID != False):
             projection = {"_id": 1, "username": 1, "stats": 1}
             result  = userData.find_one( {"_id": ObjectId(userID["id"])}, projection)
-            return jsonify({"status": "success", "username": result["username"], "stats": result["stats"] })
+            return json.dumps({"status": "success", "username": result["username"], "stats": result["stats"] }, ensure_ascii=False)
         else:
             msg = "JWT encode error"
-            return jsonify({"status": "error", "error": msg}), 400
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 400
 
     except OperationFailure:
         msg = "Operation Failure"
-        return jsonify({"status": "error", "error": msg}), 500
+        return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__}), 500        
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500        
 
 
 
@@ -129,19 +128,19 @@ def dbUpdateUser(userID, newUsername):
 
             if (result.modified_count > 0):
                 newAuth = encode_jwt({"id": userID["id"]})
-                return jsonify({"status": "success", "username": newUsername, "auth": newAuth})
+                return json.dumps({"status": "success", "username": newUsername, "auth": newAuth}, ensure_ascii=False)
             else:
                 msg = "Failed to post update"
-                return jsonify({"status": "error", "error": msg}), 400
+                return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 400
 
         except OperationFailure:
             msg = "Operation failure"
-            return jsonify({"status": "error", "error": msg}), 500
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 500
 
         except Exception as e:
-            return jsonify({"status": "error", "error": e.__class__.__name__}), 500
+            return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
     else:
-        return jsonify({"status": "error", "error": "Incorrect authentication"}), 403
+        return json.dumps({"status": "error", "error": "Incorrect authentication"}, ensure_ascii=False), 403
 
 
 
@@ -153,17 +152,17 @@ def dbPostStat(userID, stat):
         result = userData.update_one(filter, update)
 
         if (result.modified_count > 0):
-            return jsonify({"status": "success"})
+            return json.dumps({"status": "success"}, ensure_ascii=False)
         else:
             msg = "Failed to post update"
-            return jsonify({"status": "error", "error": msg}), 400
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False), 400
 
     except OperationFailure:
-        return jsonify({"status": "error", "error": "Operation Failure"}), 500
+        return json.dumps({"status": "error", "error": "Operation Failure"}, ensure_ascii=False), 500
 
     except Exception as e:
         print(e)
-        return jsonify({"status": "error", "error": e.__class__.__name__}), 500
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False), 500
         
         
 
@@ -180,15 +179,15 @@ def dbFindUsers(search):
             for doc in cursor:
                 users.append({"id": str(doc["_id"]), "username": doc["username"], "highscore": doc["highscore"]})
 
-            return jsonify({"users": users})
+            return json.dumps({"users": users}, ensure_ascii=False)
 
         except OperationFailure:
-            return jsonify({"users": []})
+            return json.dumps({"users": []}, ensure_ascii=False)
 
         except Exception as e:
-            return jsonify({"users": []})
+            return json.dumps({"users": []}, ensure_ascii=False)
     else:
-        return jsonify({"users": []})
+        return json.dumps({"users": []}, ensure_ascii=False)
 
 
         
@@ -197,14 +196,14 @@ def dbFindUserById(userID):
         projection = {"_id": 1, "username": 1, "stats": 1, "highscore": 1}
         result = userData.find_one({"_id": ObjectId(userID) }, projection)
         if result:
-            return jsonify({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"], "highscore": result["highscore"]})
+            return json.dumps({"id": str(result["_id"]), "username": result["username"], "stats": result["stats"], "highscore": result["highscore"]}, ensure_ascii=False)
         else:
-            return jsonify({"error": "User not found"}), 404 
+            return json.dumps({"error": "User not found"}, ensure_ascii=False), 404 
     except OperationFailure:
-        return jsonify({"error": "User not found"}), 500
+        return json.dumps({"error": "User not found"}, ensure_ascii=False), 500
 
     except Exception as e:
-        return jsonify({"error": e.__class__.__name__}), 500
+        return json.dumps({"error": e.__class__.__name__}, ensure_ascii=False), 500
 
 def hashPassword(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -217,9 +216,9 @@ def dbGetGameSessions():
         for doc in gameSession.find():
             sessions.append({"id": doc["session_id"], "ip": doc["ip"], "port": doc["port"], "name": doc["name"]})
 
-        return jsonify({"status": "success", "sessions": sessions})
+        return json.dumps({"status": "success", "sessions": sessions}, ensure_ascii=False)
     except Exception as e:
-        return jsonify({"status": "error"})
+        return json.dumps({"status": "error"}, ensure_ascii=False)
 
 
 def dbAllocate(serverIp, serverPort, name, gameSessionId):
@@ -227,14 +226,14 @@ def dbAllocate(serverIp, serverPort, name, gameSessionId):
         result = gameSession.insert_one({"ip": serverIp, "port": serverPort, "name": name, "session_id": gameSessionId})
         
         if result.acknowledged:
-            return jsonify({"status": "success", "id": gameSessionId, "ip": serverIp, "port": serverPort, "name": name})
+            return json.dumps({"status": "success", "id": gameSessionId, "ip": serverIp, "port": serverPort, "name": name}, ensure_ascii=False)
         else:
             msg = "Operation not acknowledged"
-            return jsonify({"status": "error", "error": msg})
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False)
 
     except Exception as e:
         print(e)
-        return jsonify({"status": "error", "error": e.__class__.__name__})
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False)
 
 
 
@@ -243,13 +242,13 @@ def dbRemoveGameSession(gameSessionId):
         result = gameSession.delete_one({"session_id": gameSessionId})
         
         if result.deleted_count == 1:
-            return jsonify({"status": "success"})
+            return json.dumps({"status": "success"}, ensure_ascii=False)
         else:
             msg = "No Game session with this ID was found"
-            return jsonify({"status": "error", "error": msg})
+            return json.dumps({"status": "error", "error": msg}, ensure_ascii=False)
 
     except Exception as e:
-        return jsonify({"status": "error", "error": e.__class__.__name__})
+        return json.dumps({"status": "error", "error": e.__class__.__name__}, ensure_ascii=False)
 
 
 
@@ -260,9 +259,9 @@ def dbGetSingleGameSession(gameSessionId):
     try:
         result  = gameSession.find_one( {"session_id": gameSessionId })
         if result:
-            return jsonify({"status": "success", "ip": result["ip"], "port": result["port"], "name": result["name"]})
+            return json.dumps({"status": "success", "ip": result["ip"], "port": result["port"], "name": result["name"]}, ensure_ascii=False)
         else:
-            return jsonify({"status": "error"})  
+            return json.dumps({"status": "error"}, ensure_ascii=False)  
 
     except Exception as e:
-        return jsonify({"status": "error"})  
+        return json.dumps({"status": "error"}, ensure_ascii=False)  

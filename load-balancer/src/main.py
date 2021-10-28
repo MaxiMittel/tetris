@@ -1,5 +1,5 @@
 from math import e
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import requests
 from flask_cors import CORS
 from server_object import serverObject as so
@@ -9,6 +9,7 @@ import sys
 from dotenv import load_dotenv, find_dotenv
 import multiprocessing
 import directory
+import json
 
 
 load_dotenv(find_dotenv())
@@ -52,7 +53,7 @@ def updateServers():
             newPort = server["port"]
             apiServerDict[newName] = so.makeServerObject(newIp,newPort,newName)
 
-    return jsonify({"status": "success"})
+    return json.dumps({"status": "success"}, ensure_ascii=False)
 
 
 
@@ -79,13 +80,13 @@ def forwardGetRequest(forwardpath):
             with open("request_log.csv", 'a+') as f:
                 f.write(str(latency) + "," + str(api.getName()) + "," + str(request.method) + "," + str(request.path) + "\n")
 
-            return jsonify(response.json()), response.status_code
+            return json.dumps(response.json(), ensure_ascii=False), response.status_code
             
         except Exception as e:
             app.logger.error(e)
-            return jsonify({"status": "error"}), 500
+            return json.dumps({"status": "error"}, ensure_ascii=False), 500
     else:
-        return jsonify({"status": "error"}), 500
+        return json.dumps({"status": "error"}, ensure_ascii=False), 500
 
 
 @app.route("/api/<path:forwardpath>", methods=['POST'])
@@ -109,14 +110,14 @@ def forwardPostRequest(forwardpath):
             with open("request_log.csv", 'a+') as f:
                 f.write(str(latency) + "," + str(api.getName()) + "," + str(request.method) + "," + str(request.path) + "\n")
                 
-            return jsonify(response.json()), response.status_code
+            return json.dumps(response.json(), ensure_ascii=False), response.status_code
 
         except Exception as e:
             app.logger.error(e)
-            return jsonify({"status": "error"}), 500
+            return json.dumps({"status": "error"}, ensure_ascii=False), 500
 
     else:
-        return jsonify({"status": "error"}), 500
+        return json.dumps({"status": "error"}, ensure_ascii=False), 500
 
 
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const DIRECTORY_SERVICE = "http://127.0.0.1:7777/";
+const DIRECTORY_SERVICE = "http://18.192.65.75:7777";
 export var ENDPOINT = "";
 
 export const requestEndpoint = () => {
