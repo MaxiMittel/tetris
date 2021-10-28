@@ -63,7 +63,10 @@ def getGameServer():
     Returns:
     A list with all registered services
     """
-    servers = list(__gameServerDict.values())
+    servers = []
+    for s in list(__gameServerDict.values()):
+        servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
+
     return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
@@ -75,7 +78,10 @@ def getApiServer():
     Returns:
     A list with all registered api services
     """
-    servers = list(__apiServerDict.values())
+    servers = []
+    for s in list(__apiServerDict.values()):
+        servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
+        
     return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
@@ -87,7 +93,10 @@ def getLoadBalancer():
     Returns:
     A list with all registered load balancers
     """
-    servers = list(__lbServerDict.values())
+    servers = []
+    for s in list(__lbServerDict.values()):
+        servers.append({"name": s.getName(), "ip": s.getIp(), "port": s.getPort()})
+
     return json.dumps({"server": servers}, ensure_ascii=False), 200
 
 
