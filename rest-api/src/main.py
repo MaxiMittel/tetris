@@ -273,7 +273,7 @@ def Server(host, port):
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
-        host = socket.gethostbyname(socket.gethostname())
+        host = "0.0.0.0"
         port = int(sys.argv[1])
         name = sys.argv[2]
 
@@ -282,11 +282,11 @@ if __name__ == '__main__':
 
         # Wait 2 seconds then try until registration was successful
         time.sleep(2)
-        is_Registered = directory.registerService(host, port, name, "API")
+        is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
         while not is_Registered:
             app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
             time.sleep(2)
-            is_Registered = directory.registerService(host, port, name, "API")
+            is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
 
         app.logger.info("Connection to directory service was successfull")
     else:
