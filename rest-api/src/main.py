@@ -281,14 +281,14 @@ if __name__ == '__main__':
         server_process.start()
 
         # Wait 2 seconds then try until registration was successful
-        #time.sleep(2)
-        #is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
-        #while not is_Registered:
-            #app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
-            #time.sleep(2)
-            #is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
+        time.sleep(2)
+        is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
+        while not is_Registered:
+            app.logger.info("Connection to directory service was unsuccessfull. Retrying in 2s.")
+            time.sleep(2)
+            is_Registered = directory.registerService(os.environ.get("PUBLIC_IP"), port, name, "API")
 
-        #app.logger.info("Connection to directory service was successfull")
+        app.logger.info("Connection to directory service was successfull")
     else:
         print("Usage: python main.py <port> <name>")
         exit()

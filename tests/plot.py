@@ -15,7 +15,7 @@ plt.bar(grouped["name"], grouped["count"], color=RED, width=0.4)
 plt.ylabel("Distribution of API requests")
 plt.show()
 
-ping_test = pd.read_csv("ping_log.csv", names=["latency"])
+ping_test = pd.read_csv("api_log.csv", names=["latency"])
 
 fiq = plt.figure(figsize = (10, 5))
 plt.plot(ping_test["latency"].rolling(window=4).mean(), color=PURPLE)
