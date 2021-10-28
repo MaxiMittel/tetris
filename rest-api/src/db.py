@@ -33,7 +33,7 @@ def decode_jwt(token):
 Encode the supplied data to a JWT token
 """
 def encode_jwt(data):
-    return jwt.encode(data, SECRET, algorithm="HS256")
+    return jwt.encode(data, SECRET, algorithm="HS256").decode("utf-8")
 
 # Connection to monogodb atlas
 dbUri = "mongodb+srv://{}:{}@adstetriscluster.ecfwj.mongodb.net/tetris_db?retryWrites=true&w=majority".format(os.environ.get("DB_USER"), os.environ.get("DB_PASSWORD"))
