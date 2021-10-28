@@ -129,7 +129,7 @@ def field_update(data):
 
     # Add new row
     for _ in range(len(completeRows)):
-        gameField.insert(0, [0] * 10)
+        gameField.insert(0, [0] * 30)
 
     game[room].set_field(gameField)
 
