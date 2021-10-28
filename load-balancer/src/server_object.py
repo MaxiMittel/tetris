@@ -1,7 +1,7 @@
 
 class serverObject(object):
 
-    def __init__(self,ip,port,name,metric=10000):
+    def __init__(self,ip,port,name,metric=0):
         self.__ip = ip
         self.__port = port
         self.__name = name
